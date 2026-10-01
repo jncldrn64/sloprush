@@ -149,9 +149,11 @@ entero:
   resolución, backend, sincronización vertical y el comando que la produjo. Una medición hecha con
   llvmpipe u otro renderizador por software no cuenta como medición de GPU (`docs/DESIGN.md`,
   "Presentación y registro"). Decisiones: 2026-10-01 "Toda cifra de rendimiento lleva sus
-  condiciones" y "El motor imprime su arranque, su adaptador y su backend".
+  condiciones, con su motivo" y "El motor imprime su arranque, su adaptador y su backend, con su
+  motivo".
 - **Antes de usar una API de una dependencia se lee la documentación de la versión fijada** en
-  `Cargo.toml`. Decisión: 2026-10-01 "Versiones exactas y documentación de la versión".
+  `Cargo.toml`. Decisión: 2026-10-01 "Versiones exactas y documentación de la versión, con su
+  motivo".
 
 ## 9. Prosa
 
@@ -238,19 +240,20 @@ print(f"regla 8: {pl} planas de {t} ternas = {100*pl/max(t,1):.1f}%")
 EOF
 ```
 
-**Líneas base, medidas el 2026-10-01** con el bloque de arriba, sobre 11 archivos y 7891 palabras.
-Se midieron en el PR que siembra los documentos.
+**Líneas base, medidas el 2026-10-01** con el bloque de arriba. Las reglas 1 y 2 son de la
+medición del PR que siembra los documentos, sobre 11 archivos y 7891 palabras. Las reglas 3 a 8
+se midieron de nuevo en el PR que corrige la siembra, sobre 9 archivos y 11768 palabras.
 
 | Regla | Línea base |
 |---|---|
 | 1. Intensificadores | 0 apariciones |
 | 2. Paralelismo contrastivo | 0 casos en cada uno de los 11 archivos |
 | 3. Viñetas del CHANGELOG de más de 60 palabras | 0 |
-| 4. Encabezados con paréntesis | 0 en cada uno de los 11 archivos |
+| 4. Encabezados con paréntesis | 0 en cada uno de los 9 archivos |
 | 5. "No verificado" | sin comando: se revisa a mano |
 | 6. Anclas a número de línea | 0 |
 | 7. Párrafos de más de cinco oraciones | 0 |
-| 8. Ternas planas | 0 de 54 ternas, 0,0 % |
+| 8. Ternas planas | 0 de 101 ternas, 0,0 % |
 
 El conteo de la regla 2 depende de su expresión regular. Si se ajusta, se recalculan todos los
 archivos de una vez y se reescribe la línea base con su fecha nueva.
@@ -262,7 +265,7 @@ archivos de una vez y se reescribe la línea base con su fecha nueva.
 - **Lo que se copia de terceros**, fuera del código, viaja con su LICENSE y su atribución en la
   misma carpeta. Si la fuente no la trae, se para y se avisa antes del commit.
 - **No se copia ni se traduce código de proyectos externos.** Se pueden consultar proyectos con una
-  licencia de `docs/DESIGN.md`, "Licencias de las dependencias", y cada consulta se registra como
-  entrada de `docs/DECISIONS.md` con URL, licencia, fecha e idea tomada. No se abre código GPL,
-  LGPL o AGPL, ni descompilaciones de juegos. Decisión: 2026-10-01 "No se copia código de
-  proyectos externos".
+  licencia del escalón 1 de `docs/DESIGN.md`, "Licencias de las dependencias", y cada consulta se
+  registra como entrada de `docs/DECISIONS.md` con URL, licencia, fecha e idea tomada. No se abre
+  código GPL, LGPL o AGPL, ni descompilaciones de juegos. Decisión: 2026-10-01 "No se copia código
+  de proyectos externos, con su motivo".

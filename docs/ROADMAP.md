@@ -13,7 +13,8 @@ fase no se corre de lugar. Después viene el mínimo viable, una capacidad por f
 Dentro del mínimo viable el agente decide la estructura interna. La gravedad va última porque
 necesita el cubo. El catálogo de bloques se extrae de lo construido y lo congela el autor, así que
 no tiene fase mientras el mínimo viable no esté cerrado. Fuentes: `docs/DECISIONS.md`, 2026-10-01
-"Primero el mínimo viable, después el catálogo de bloques" y "Alcance del mínimo viable".
+"Primero el mínimo viable, después el catálogo de bloques, con su motivo" y "Alcance del mínimo
+viable, con su motivo".
 
 ## Reglas de fase
 
@@ -21,7 +22,7 @@ no tiene fase mientras el mínimo viable no esté cerrado. Fuentes: `docs/DECISI
 
 **Quién mueve el estado:** el agente lleva una fase hasta `lista para verificación`. Solo el autor
 la pasa a `cerrada`, después de correr sus ejemplos en los dos equipos (`docs/DECISIONS.md`,
-2026-10-01 "Estado de fase lista para verificación").
+2026-10-01 "Estado de fase lista para verificación, con su motivo").
 
 **Entrada a una fase en curso:** un ítem parqueado entra a una fase que ya arrancó solo si dejarlo
 afuera hace imposible un incremento pendiente, o si obliga a rehacer trabajo ya entregado. Lo
@@ -32,11 +33,12 @@ bloquea y qué la bloquea, y su estado.
 
 **Cada fase termina con un ejemplo** en `examples/`, por lo menos, que corre con
 `cargo run --example` y el nombre del ejemplo. El criterio de aceptación nombra ese ejemplo y el
-equipo donde corre (`docs/DECISIONS.md`, 2026-10-01 "Cada fase cierra con un ejemplo").
+equipo donde corre (`docs/DECISIONS.md`, 2026-10-01 "Cada fase cierra con un ejemplo, con su
+motivo").
 
 **Qué prueba cada equipo:** el equipo mínimo, todo el 2D y el 3D básico. El equipo de desarrollo,
 lo mismo, más el 3D pesado y las mediciones (`docs/DECISIONS.md`, 2026-10-01 "Dos equipos de
-prueba").
+prueba, con su motivo").
 
 ## Fase 0: Infraestructura
 
@@ -44,25 +46,28 @@ prueba").
 
 **Objetivo:** dejar el proyecto Cargo listo y cerrar los huecos que bloquean todo lo demás.
 
-**Alcance:**
+**Alcance a cargo del agente:**
 - Proyecto Cargo con el toolchain fijado.
-- cargo deny y cargo audit.
+- cargo deny y cargo audit, configurados según `docs/DESIGN.md`, "Licencias de las dependencias"
+  y "Seguridad de las dependencias".
 - Hooks de git.
-- Cierre de cuatro huecos de `docs/ARCHITECTURE.md`: "Panfrost en el equipo mínimo", "Una ventana
-  en el equipo mínimo", "glibc de bookworm" y "wgpu sobre Panfrost".
 - El ejemplo `arranque`, que imprime los pasos de arranque y cierre, el adaptador y el backend
-  (`docs/DESIGN.md`, "Presentación y registro").
+  (`docs/DESIGN.md`, "Presentación y registro"). Corrido en el equipo mínimo, cierra el hueco
+  "wgpu sobre Panfrost" de `docs/ARCHITECTURE.md`.
+
+**Alcance a cargo del autor**, porque piden sus manos en el equipo mínimo: cerrar los huecos
+"Panfrost en el equipo mínimo", "Una ventana en el equipo mínimo" y "glibc de bookworm" de
+`docs/ARCHITECTURE.md`.
 
 **Criterio de aceptación:** `cargo run --example arranque` corre en los dos equipos. En el equipo
 mínimo imprime un adaptador Mali con backend OpenGL ES y ninguna advertencia de renderizador por
-software; en el de desarrollo, un adaptador de hardware. En el equipo de desarrollo, cargo deny y
-cargo audit terminan sin hallazgos. Los cuatro huecos quedan borrados de `docs/ARCHITECTURE.md`
-con la corrida que cerró cada uno.
+software; en el de desarrollo, un adaptador de hardware. En el equipo de desarrollo,
+`cargo deny check` y cargo audit terminan sin hallazgos. Los cuatro huecos quedan borrados de
+`docs/ARCHITECTURE.md` con la corrida que cerró cada uno.
 
 **Bloquea:** fases 1, 2, 3 y 4.
 
-**Bloqueada por:** ninguna fase. Antes de la primera dependencia hace falta el criterio de
-antigüedad de crates, sin decidir (`docs/DESIGN.md`, "Sin escribir todavía").
+**Bloqueada por:** nada.
 
 ## Fase 1: Ventana y teclado
 
@@ -92,8 +97,9 @@ imprime cada tecla que se aprieta y termina sin error al cerrar la ventana.
 - Un sprite 2D en la ventana.
 - El ejemplo `sprite`.
 
-**Criterio de aceptación:** en los dos equipos, `cargo run --example sprite` dibuja un sprite en la
-ventana, y su registro no advierte renderizador por software.
+**Criterio de aceptación:** en los dos equipos, `cargo run --example sprite` dibuja un número fijo
+de cuadros y termina con código 0, y su registro no advierte renderizador por software. Eso da sí
+o no sin mirar la pantalla. Que el sprite se vea en la ventana lo comprueba el autor.
 
 **Bloquea:** nada.
 
@@ -110,8 +116,10 @@ ventana, y su registro no advierte renderizador por software.
 - Una cámara que se mueve con el teclado.
 - El ejemplo `cubo`.
 
-**Criterio de aceptación:** en los dos equipos, `cargo run --example cubo` dibuja un cubo en
-perspectiva, las teclas mueven la cámara, y el registro no advierte renderizador por software.
+**Criterio de aceptación:** en los dos equipos, `cargo run --example cubo` dibuja un número fijo de
+cuadros y termina con código 0, y su registro no advierte renderizador por software. Eso da sí o
+no sin mirar la pantalla. Que el cubo se vea en perspectiva y que las teclas muevan la cámara lo
+comprueba el autor.
 
 **Bloquea:** fase 4.
 
@@ -121,18 +129,18 @@ perspectiva, las teclas mueven la cámara, y el registro no advierte renderizado
 
 **Estado:** `pendiente`
 
-**Objetivo:** que el cubo caiga con gravedad, con la simulación a paso fijo de 60 Hz.
+**Objetivo:** que el cubo caiga con gravedad, con la simulación a paso fijo de 60 Hz por defecto.
 
 **Alcance:**
 - Gravedad sobre el cubo.
-- Simulación a paso fijo de 60 Hz, separada del dibujo (`docs/DESIGN.md`, "La simulación avanza a
-  paso fijo de 60 Hz").
+- Simulación a paso fijo, separada del dibujo, con la frecuencia configurable y 60 Hz por defecto
+  (`docs/DESIGN.md`, "La simulación avanza a paso fijo de frecuencia configurable").
 - El ejemplo `caida`.
 
 **Criterio de aceptación:** en los dos equipos, `cargo run --example caida` suelta el cubo en
 reposo con gravedad 9,81 m/s² e imprime cuánto bajó tras 1 s de simulación. Con el dibujo limitado
-a 30 y a 240 cuadros por segundo imprime la misma cifra. Compararla con 4,905 m necesita la
-tolerancia que falta en `docs/DESIGN.md`, "Sin escribir todavía".
+a 30 y a 240 cuadros por segundo imprime exactamente la misma cifra, y a 60 Hz esa cifra se aleja
+menos de 2 % de 4,905 m.
 
 **Bloquea:** nada.
 
@@ -162,3 +170,11 @@ Lo que ya se sabe que se quiere y todavía no tiene fase. Cada ítem nace con su
   **Entró:** 2026-10-01, #2.
 - La escena de medición de los 240 fps (A7), con las condiciones de `CLAUDE.md`, sección 8.
   **Entró:** 2026-10-01, #2.
+- Multijugador con servidor, que puede subir la frecuencia de la simulación.
+  **Entró:** 2026-10-01, #3.
+- Detección continua de colisiones: más frecuencia reduce las colisiones perdidas y no las elimina.
+  **Entró:** 2026-10-01, #3.
+- Sandbox para scripts de terceros, sin acceso a disco ni a red salvo permiso (A8).
+  **Entró:** 2026-10-01, #3.
+- El tráfico escrito como script, como prueba de que el catálogo de bloques alcanza.
+  **Entró:** 2026-10-01, #3.

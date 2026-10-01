@@ -74,4 +74,6 @@ y uno grande sí.
 
 ## Anotaciones
 
-Vacío.
+- 2026-10-01, agente de la corrección de la siembra: el pedido nombraba `relevo-sloprush.md` y
+  mandaba valorar su Propuesta 2. El archivo no estaba en el repo, ni en GitHub, ni en la sesión,
+  así que la Propuesta 2 quedó sin valorar. Importa porque el autor pidió la valoración.
