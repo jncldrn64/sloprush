@@ -82,9 +82,14 @@ si eso cierra un hueco de esta lista.
   15945, y compilar puede agotarla. Sin medir. Lo muestra `free -m` antes y durante la primera
   compilación completa.
 - **2026-10-01: Licencias del árbol de wgpu.** Sin verificar que las dependencias de wgpu cumplan
-  `docs/DESIGN.md`, "Licencias de las dependencias". El manifiesto de unicode-ident 1.0.26 declara
-  `(MIT OR Apache-2.0) AND Unicode-3.0`, Unicode-3.0 no está en la lista, y proc-macro2 1.0.107
-  depende de él. Lo muestra `cargo deny check licenses` con el primer `Cargo.lock` que traiga wgpu.
-- **2026-10-01: Rapier.** Candidato para las físicas, sin comprobar contra la lista de licencias ni
-  contra el criterio de antigüedad de crates, que está sin decidir. Lo muestra el campo `license`
-  de su manifiesto publicado.
+  `docs/DESIGN.md`, "Licencias de las dependencias" y "Seguridad de las dependencias". El
+  manifiesto de unicode-ident 1.0.26, del que depende proc-macro2 1.0.107, declara
+  `(MIT OR Apache-2.0) AND Unicode-3.0`, y Unicode-3.0 ya está en el escalón 1. Sin verificar que
+  el árbol de wgpu traiga proc-macro2. Lo muestran `cargo deny check licenses` y
+  `cargo deny check advisories` con el primer `Cargo.lock` que traiga wgpu.
+- **2026-10-01: Rapier.** Candidato para las físicas. rapier3d 0.36.0 declara Apache-2.0, del
+  escalón 1. Su primer release es del 2020-08-19 y el último del 2026-09-25, según la API de
+  crates.io consultada el 2026-10-01, así que como dependencia directa cumple la regla 3 de
+  `docs/DESIGN.md`, "Seguridad de las dependencias". Sin verificar: su árbol de dependencias
+  contra las dos normas. Lo muestra `cargo deny check` con un `Cargo.lock` que lo traiga. La
+  decisión entre físicas propias o un crate sigue sin tomar.
