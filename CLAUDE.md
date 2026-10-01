@@ -4,7 +4,8 @@
 > repo. No dice qué hace el producto ni cómo se escribe su código: eso es `docs/REQUIREMENTS.md` y
 > `docs/DESIGN.md`. **Régimen:** se corrige. Un cambio de regla lleva su entrada en
 > `docs/DECISIONS.md` en el mismo PR. **Origen:** plantilla 1.0, sacada de dos repos que ya usaban
-> este método.
+> este método, y sembrada el 2026-10-01 (`docs/DECISIONS.md`, 2026-10-01 "Se adopta la plantilla
+> 1.0").
 
 ## 1. Orden de lectura
 
@@ -144,6 +145,13 @@ entero:
   y qué corrida descarta las que no funcionan.
 - **Una idea se descarta** cuando su complejidad supera un beneficio que se pueda medir, nunca
   porque suene riesgosa, y después de comprobar qué quiso decir quien la propuso.
+- **Toda cifra de rendimiento lleva sus condiciones:** escena, cantidad de objetos, equipo,
+  resolución, backend, sincronización vertical y el comando que la produjo. Una medición hecha con
+  llvmpipe u otro renderizador por software no cuenta como medición de GPU (`docs/DESIGN.md`,
+  "Presentación y registro"). Decisiones: 2026-10-01 "Toda cifra de rendimiento lleva sus
+  condiciones" y "El motor imprime su arranque, su adaptador y su backend".
+- **Antes de usar una API de una dependencia se lee la documentación de la versión fijada** en
+  `Cargo.toml`. Decisión: 2026-10-01 "Versiones exactas y documentación de la versión".
 
 ## 9. Prosa
 
@@ -230,7 +238,19 @@ print(f"regla 8: {pl} planas de {t} ternas = {100*pl/max(t,1):.1f}%")
 EOF
 ```
 
-**Líneas base:** sin medir. Se escriben acá, con su fecha, en el PR que siembra los documentos.
+**Líneas base, medidas el 2026-10-01** con el bloque de arriba, sobre 11 archivos y 7891 palabras.
+Se midieron en el PR que siembra los documentos.
+
+| Regla | Línea base |
+|---|---|
+| 1. Intensificadores | 0 apariciones |
+| 2. Paralelismo contrastivo | 0 casos en cada uno de los 11 archivos |
+| 3. Viñetas del CHANGELOG de más de 60 palabras | 0 |
+| 4. Encabezados con paréntesis | 0 en cada uno de los 11 archivos |
+| 5. "No verificado" | sin comando: se revisa a mano |
+| 6. Anclas a número de línea | 0 |
+| 7. Párrafos de más de cinco oraciones | 0 |
+| 8. Ternas planas | 0 de 54 ternas, 0,0 % |
 
 El conteo de la regla 2 depende de su expresión regular. Si se ajusta, se recalculan todos los
 archivos de una vez y se reescribe la línea base con su fecha nueva.
@@ -239,5 +259,10 @@ archivos de una vez y se reescribe la línea base con su fecha nueva.
 
 - **Este repo es el único destino de escritura.** Otro repo clonado en la sesión es solo lectura:
   se copia desde él, nunca se escribe en él. Ante la duda, se para y se pregunta.
-- **Lo que se copia de terceros** viaja con su LICENSE y su atribución en la misma carpeta. Si la
-  fuente no la trae, se para y se avisa antes del commit.
+- **Lo que se copia de terceros**, fuera del código, viaja con su LICENSE y su atribución en la
+  misma carpeta. Si la fuente no la trae, se para y se avisa antes del commit.
+- **No se copia ni se traduce código de proyectos externos.** Se pueden consultar proyectos con una
+  licencia de `docs/DESIGN.md`, "Licencias de las dependencias", y cada consulta se registra como
+  entrada de `docs/DECISIONS.md` con URL, licencia, fecha e idea tomada. No se abre código GPL,
+  LGPL o AGPL, ni descompilaciones de juegos. Decisión: 2026-10-01 "No se copia código de
+  proyectos externos".

@@ -2,7 +2,8 @@
 
 > **Rol:** tránsito. Acá va lo que se observó y se perdería si nadie lo escribe, antes de saber si
 > se quiere. No manda nunca. **Régimen:** tiende a cero; su medida es la velocidad con que se
-> vacía, no lo que contiene. **Origen:** plantilla 1.0.
+> vacía, no lo que contiene. **Origen:** plantilla 1.0, sembrada el 2026-10-01
+> (`docs/DECISIONS.md`, 2026-10-01 "Se adopta la plantilla 1.0").
 >
 > **El criterio de entrada no es si está maduro: es si se pierde.**
 
@@ -73,4 +74,4 @@ y uno grande sí.
 
 ## Anotaciones
 
-<vacío>
+Vacío.

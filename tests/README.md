@@ -5,8 +5,8 @@ se escriben los tests es `docs/DESIGN.md`.
 
 ## 1. Correr todo
 
-<Un comando que corre todas las suites y dice al final si pasó todo.>
+Todavía no hay tests. El comando se escribe acá junto con la primera suite.
 
 ## 2. Las suites
 
-<Una línea por suite: qué protege y qué corrida o criterio de aceptación la originó.>
+Ninguna todavía.
