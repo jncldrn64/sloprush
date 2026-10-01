@@ -11,6 +11,11 @@
 Las frases son del autor, dichas el 2026-10-01, con la ortografía corregida y nada más. Van
 ordenadas por tema. La etiqueta de cada una sirve para citarla desde otros documentos.
 
+Para quién:
+
+- **A13.** "Yo, para desarrollar una plataforma de desarrollo que cualquiera pueda usar. ¿Y si no
+  es el alcance? No pasa nada, el proyecto pasa al archive y continúo con MIDI."
+
 Qué es:
 
 - **A1.** "No quiero un mod, quiero un motor donde yo hacer mis cosas propias mediante mis
@@ -68,7 +73,7 @@ comprobarse, lo dice, y el dato que falta está en la sección 5.
   gravedad, en 2D, como fuente futura de escenas de prueba. Ninguno es un entregable.
 - Una API de bloques estable. Es inestable hasta que el autor la congele por escrito
   (`docs/DECISIONS.md`, 2026-10-01 "La API de bloques es inestable hasta que el autor la
-  congele").
+  congele, con su motivo").
 
 ## 4. Requisitos no funcionales
 
@@ -79,26 +84,28 @@ comprobarse, lo dice, y el dato que falta está en la sección 5.
 3. **Una sola implementación del juego** (A2, A5). Con la misma entrada, el estado de juego es el
    mismo sobre cualquier implementación gráfica, y lo que una tiene y otra no solo puede ser
    visual. Los medios están en `docs/DESIGN.md`: "Dos niveles gráficos" y "La simulación avanza a
-   paso fijo de 60 Hz".
+   paso fijo de frecuencia configurable".
 4. **Rendimiento** (A7). Más de 240 cuadros por segundo. Sin escena definida: sección 5.
 5. **Licencia del motor.** AGPL-3.0, con el archivo `LICENSE` (`docs/DECISIONS.md`, 2026-10-01
-   "La licencia del motor es AGPL-3.0"). Qué licencias se admiten en las dependencias es un medio:
-   `docs/DESIGN.md`, "Licencias de las dependencias".
+   "La licencia del motor es AGPL-3.0, con su motivo"). Qué licencias se admiten en las
+   dependencias es un medio: `docs/DESIGN.md`, "Licencias de las dependencias".
 6. **Avisos de licencia en lo exportado.** Todo juego exportado incluye los avisos de licencia de
    las dependencias (`docs/DECISIONS.md`, 2026-10-01 "Los juegos exportados llevan los avisos de
-   licencia"). Se comprueba cuando exista la exportación.
+   licencia, con su motivo"). Se comprueba cuando exista la exportación.
 
 ## 5. Sin escribir todavía
 
 Mientras esta lista tenga algo, el archivo es una semilla.
 
-- Qué pasa si el motor falla, y para quién más es. La sección 1 lo pide y ninguna frase del autor
-  lo dice.
 - Qué versiones de cada sistema entran en "los OS o kernels soportados de los últimos 5 años"
   (A3).
 - La escena de los 240 fps (A7): escena, cantidad de objetos, equipo, resolución, backend y
   sincronización vertical, como pide `CLAUDE.md`, sección 8. Los juegos de la sección 3 son una
   fuente posible.
 - Qué obliga la AGPL-3.0 a quien exporta un juego. Pregunta abierta del autor, sin contestar.
+- Si la AGPL-3.0 sirve al fin que el autor dio para elegirla (`docs/DECISIONS.md`, 2026-10-01 "La
+  licencia del motor es AGPL-3.0, con su motivo"). En la conversación de diseño se observó que una
+  licencia de código abierto no excluye personas ni usos: la AGPL impide cerrar el código y deja
+  usarlo. Sin contestar.
 - Qué son "los mismos parámetros que el propio motor" de A9.
 - Qué es un bloque (A1) y qué es un genérico (A11). Salen del catálogo de bloques.
