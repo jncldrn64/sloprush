@@ -24,8 +24,6 @@ Comprobado el 2026-10-01 contra `git ls-files`. No hay código.
 - `docs/REQUIREMENTS.md`: qué tiene que ser verdad, y para quién.
 - `docs/ROADMAP.md`: las fases hasta el mínimo viable y el Backlog.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
-- `docs/modulo/standard.md` y `docs/modulo/surface.md`: el par de la plantilla para un módulo con
-  superficie propia, sin llenar. Ningún módulo existe todavía.
 - `tests/README.md`: cómo se corren los tests. Todavía no hay tests.
 
 ## 2. Dónde vive cada cosa
