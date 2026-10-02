@@ -19,3 +19,8 @@ dice cuál.
   `--backend`. Salen de `docs/DESIGN.md`, "Presentación y registro".
 - `tests/arranque.rs`: el motor consigue dispositivo con GL y con Vulkan, sin ventana. Sale del
   criterio de aceptación de la fase 0.
+- Pruebas unitarias de `src/ventana.rs`: las opciones `--cuadros` y `--limite-fps`.
+- `tests/ventana.sh gl` y `tests/ventana.sh vulkan`: abren el ejemplo `ventana` en un Xvfb, le
+  aprietan dos teclas con xdotool, piden el cierre con `tests/cerrar_ventana.py` y revisan la
+  salida. Piden Xvfb, xdotool y python3, y no corren con `cargo test`. Salen del criterio de
+  aceptación de la fase 1.

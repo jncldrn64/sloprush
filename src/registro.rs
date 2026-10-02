@@ -16,6 +16,11 @@ pub fn cierre(mensaje: impl AsRef<str>) {
     println!("[cierre] {}", mensaje.as_ref());
 }
 
+/// Una entrada del usuario, como una tecla apretada.
+pub fn entrada(mensaje: impl AsRef<str>) {
+    println!("[entrada] {}", mensaje.as_ref());
+}
+
 /// Algo que el usuario tiene que saber, como un renderizador por software.
 pub fn advertencia(mensaje: impl AsRef<str>) {
     println!("[advertencia] {}", mensaje.as_ref());

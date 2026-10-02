@@ -127,7 +127,7 @@ en el equipo mínimo" se cierra con el ejemplo `ventana`, con los comandos de la
 
 ## Fase 1: Ventana y teclado
 
-**Estado:** `pendiente`
+**Estado:** `lista para verificación`
 
 **Objetivo:** abrir una ventana y leer el teclado.
 
@@ -142,6 +142,43 @@ imprime cada tecla que se aprieta y termina sin error al cerrar la ventana.
 **Bloquea:** fases 2, 3 y 4.
 
 **Bloqueada por:** fase 0.
+
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, dentro de un Xvfb, sobre llvmpipe.
+`tests/ventana.sh vulkan` y `tests/ventana.sh gl` dieron sí: el ejemplo abrió la ventana, imprimió
+`[entrada] tecla Code(KeyA)` y `Code(KeyB)` para las teclas que mandó xdotool, y al recibir el
+pedido de cierre de un gestor de ventanas salió con código 0. `--cuadros 5` también salió con
+código 0 en los dos backends. Ninguna corrida pasó por una pantalla real.
+
+**Para cerrarla, en el equipo de desarrollo:**
+
+```sh
+cargo run --example ventana -- --backend vulkan
+cargo run --example ventana -- --backend gl
+```
+
+Con cada uno: se ve una ventana azul oscura, cada tecla apretada sale como una línea
+`[entrada] tecla`, y al cerrar la ventana el comando termina sin error. `echo $?` da 0.
+
+**Para llevar el binario al equipo mínimo,** desde el equipo de desarrollo, con la variable `PI` de
+la fase 0:
+
+```sh
+cargo build --release --target aarch64-unknown-linux-gnu --example ventana
+scp target/aarch64-unknown-linux-gnu/release/examples/ventana "$PI":
+```
+
+**Para cerrarla, en el equipo mínimo,** desde la consola de la placa, con un monitor y un teclado
+conectados:
+
+```sh
+sudo apt install cage
+cage -- ./ventana --backend gl --cuadros 600 > ventana.log; echo $?; cat ventana.log
+```
+
+cage no deja cerrar la ventana a mano, así que el ejemplo termina solo tras 600 cuadros, unos 10
+segundos si la pantalla va a 60 Hz. Mientras tanto se ve la ventana azul a pantalla completa y se
+aprietan algunas teclas. Después, `echo $?` tiene que dar 0 y `ventana.log` tiene que traer una
+línea `[entrada] tecla` por cada tecla. Eso cierra el hueco "Una ventana en el equipo mínimo".
 
 ## Fase 2: Sprite 2D
 

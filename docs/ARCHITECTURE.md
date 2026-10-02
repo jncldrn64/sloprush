@@ -35,14 +35,23 @@ Comprobado el 2026-10-02 contra `git ls-files`.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
 - `examples/arranque.rs`: el ejemplo de la fase 0. Arranca la GPU, imprime los adaptadores, el
   elegido y su backend, y cierra.
+- `examples/ventana.rs`: el ejemplo de la fase 1. Abre una ventana, la limpia en cada cuadro e
+  imprime cada tecla.
 - `rust-toolchain.toml`: fija Rust 1.97.0, con rustfmt, clippy y el objetivo
   `aarch64-unknown-linux-gnu`.
+- `src/dibujo.rs`: pasos de dibujo compartidos. Hoy, `limpiar`.
 - `src/gpu.rs`: el arranque de wgpu. `crear_instancia`, `listar_adaptadores`, `iniciar` y
   `es_por_software`, y la elección de backend, `Eleccion` y `separar_backend`.
-- `src/lib.rs`: la raíz del crate. Expone `gpu`, `registro`, `wgpu` y `VERSION`.
-- `src/registro.rs`: `arranque`, `carga`, `cierre`, `advertencia`, `resultado` y `error`.
+- `src/lib.rs`: la raíz del crate. Expone `dibujo`, `gpu`, `registro`, `ventana`, `wgpu` y
+  `VERSION`.
+- `src/registro.rs`: `arranque`, `carga`, `cierre`, `entrada`, `advertencia`, `resultado` y
+  `error`.
+- `src/ventana.rs`: la ventana con winit. `Opciones`, el rasgo `Escena` y `correr`, que abre la
+  ventana, conecta la superficie de wgpu y dibuja la escena cuadro a cuadro.
 - `tests/README.md`: cómo se corren las pruebas.
 - `tests/arranque.rs`: las pruebas de la fase 0.
+- `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
+- `tests/ventana.sh`: la prueba de la fase 1, dentro de un Xvfb.
 
 ## 2. Dónde vive cada cosa
 
@@ -54,6 +63,9 @@ Comprobado el 2026-10-02 contra el código.
 | Backend pedido | `Eleccion`, `separar_backend`, opción `--backend` | `src/gpu.rs` |
 | Límites del dispositivo | `Limits::downlevel_webgl2_defaults` dentro de `iniciar` | `src/gpu.rs` |
 | Detección de software | `es_por_software`, `NOMBRES_DE_SOFTWARE` | `src/gpu.rs` |
+| Opciones con ventana | `Opciones::desde_args`: `--cuadros`, `--limite-fps` | `src/ventana.rs` |
+| Modo de presentación | `AutoVsync`, o `AutoNoVsync` con `--limite-fps` | `src/ventana.rs` |
+| Tamaño inicial de la ventana | 640 por 480, en `App::abrir` | `src/ventana.rs` |
 | Formato del registro | `[etapa] mensaje` en stdout; `[error]` en stderr | `src/registro.rs` |
 | Versión de Rust | `channel` | `rust-toolchain.toml` |
 | Linker de aarch64 | `linker` | `.cargo/config.toml` |
@@ -68,10 +80,12 @@ Comprobado el 2026-10-02 contra el código.
   `~/.cargo/advisory-dbs` y `~/.cargo/advisory-db`. Cada corrida las actualiza.
 - La GPU: `iniciar` crea instancia, adaptador, dispositivo y cola dentro de `Gpu`, y se liberan al
   soltar ese valor.
+- La ventana y su superficie: las crea `App::abrir` al arrancar el bucle de eventos, y se liberan
+  en `exiting`, al terminar.
 
 ## 4. Tamaño
 
-Comprobado el 2026-10-02: 347 líneas de Rust, contadas con
+Comprobado el 2026-10-02: 766 líneas de Rust, contadas con
 `wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía
@@ -90,14 +104,11 @@ si eso cierra un hueco de esta lista.
   siembra. En el equipo mínimo: `lsmod | grep panfrost`, `dmesg | grep -i -E "panfrost|mali"` y
   `ls -l /dev/dri/`. Bloquea la fase 0.
 - **2026-10-01: Una ventana en el equipo mínimo.** Sin verificar que el equipo mínimo pueda mostrar
-  una ventana; su neofetch no mostró sesión gráfica. En la conversación de diseño se propuso cage,
-  un compositor Wayland de una sola aplicación que se instala por apt. Nunca se instaló ni se
-  probó. Lo muestra abrir un programa con ventana en el equipo mínimo, con un monitor conectado.
-  Bloquea la fase 0.
-- **2026-10-01: Qué pide la biblioteca de ventanas.** Sin verificar si la biblioteca de ventanas que
-  se elija necesita X11 o Wayland, o si puede dibujar directo sobre la salida de video. Todavía no
-  hay biblioteca elegida. Lo muestran la lista de plataformas de su documentación y una ventana
-  abierta con ella en el equipo mínimo sin compositor.
+  una ventana; su neofetch no mostró sesión gráfica. winit 0.30.13 abre ventanas solo por X11 o por
+  Wayland, así que hace falta un servidor o un compositor. En la conversación de diseño se propuso
+  cage, un compositor Wayland de una sola aplicación que bookworm trae por apt. Nunca se instaló ni
+  se probó. Lo muestra el ejemplo `ventana` corrido con cage en el equipo mínimo, con los comandos
+  de la fase 1 de `docs/ROADMAP.md`. Bloquea la fase 0.
 - **2026-10-01: glibc de bookworm.** Sin verificar que un binario aarch64 compilado en el equipo de
   desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. El 2026-10-02, compilado
   en un contenedor con Ubuntu 24.04 y glibc 2.39, el ejemplo `arranque` pide como máximo

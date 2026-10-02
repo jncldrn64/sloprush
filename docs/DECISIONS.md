@@ -801,3 +801,43 @@ Cambia `CLAUDE.md`, sección 9.
 corrección. El autor eligió esta.
 
 **Estado:** `vigente`
+
+## 2026-10-02: Entra winit 0.30.13, sin las decoraciones Adwaita
+
+**Contexto:** La fase 1 abre una ventana y lee el teclado, y no había biblioteca de ventanas
+elegida.
+
+**Decisión:** Entra winit 0.30.13 como dependencia directa, con versión exacta y solo las funciones
+`rwh_06`, `x11`, `wayland` y `wayland-dlopen`. Queda afuera `wayland-csd-adwaita`, que dibuja la
+barra de título en Wayland con fuentes propias.
+
+- Licencia `Apache-2.0`, del escalón 1.
+- Primer release 2016-03-26. La versión estable más nueva es 0.30.13, del 2026-03-02, y el último
+  release publicado es 0.31.0-beta.3, del 2026-09-04, según la API de crates.io consultada el
+  2026-10-02.
+- Con winit en el árbol, `cargo deny check` dio los cuatro chequeos en `ok`, y `cargo audit` revisó
+  247 crates sin avisos.
+
+**Alternativas:** Las funciones por defecto de winit, con las decoraciones Adwaita. Se descartaron
+porque suman crates de fuentes y de dibujo que el mínimo viable no usa. Sin ellas, en un compositor
+Wayland que no dibuja decoraciones la ventana sale sin barra de título; cage no las dibuja igual.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 1
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registran las fuentes leídas el 2026-10-02 para la fase 1. No se copió código.
+
+- Paquete publicado de winit 0.30.13, https://static.crates.io/crates/winit/winit-0.30.13.crate,
+  licencia `Apache-2.0`. Se tomaron sus funciones de compilación, que en Linux solo trae los
+  backends `x11` y `wayland` en `src/platform_impl/linux/`, y las firmas de `ApplicationHandler`,
+  `EventLoop::run_app`, `owned_display_handle` y `KeyEvent`.
+- Código publicado de wgpu 30.0.1. Se tomaron `Surface::get_current_texture`, que devuelve
+  `CurrentSurfaceTexture`, `Queue::present` y `SurfaceConfiguration`.
+- Página de manual de cage en bookworm, https://manpages.debian.org/bookworm/cage/cage.1.en.html.
+  Se tomó la forma `cage [--] aplicación [argumentos]`. Licencia de la página: no verificada.
+
+**Estado:** `vigente`

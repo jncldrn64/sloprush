@@ -9,3 +9,4 @@ license-file = "LICENSE"
 [dependencies]
 pollster = "=1.0.1"
 wgpu = "=30.0.1"
+winit = { version = "=0.30.13", default-features = false, features = ["rwh_06", "x11", "wayland", "wayland-dlopen"] }

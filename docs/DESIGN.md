@@ -41,7 +41,7 @@ https://docs.rs/crate/wgpu/30.0.1/source/README.md, consultada el 2026-10-01.
 
 **Cómo se comprueba:** `cargo tree -e normal --depth 1` lista las dependencias directas, y ninguna
 puede ser una API gráfica como `ash`, `glow`, `khronos-egl`, `metal` o `windows`. Corrido el
-2026-10-02: lista wgpu y pollster.
+2026-10-02: lista pollster, wgpu y winit.
 
 ## 3. Dos niveles gráficos
 

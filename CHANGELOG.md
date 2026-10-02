@@ -15,6 +15,9 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
 - Fase 0: el ejemplo `arranque`, que imprime los adaptadores, el elegido y su backend, y advierte
   si dibuja por software.
 - Fase 0: `deny.toml`, los hooks de git de `.githooks/` y el linker para compilar hacia aarch64.
+- Fase 1: winit 0.30.13 a versión exacta, y el ejemplo `ventana`, que abre una ventana, imprime cada
+  tecla y termina con código 0 al cerrarla o tras `--cuadros N`.
+- Fase 1: `tests/ventana.sh`, que prueba la ventana dentro de un Xvfb sin mirar la pantalla.
 
 ### Changed
 - `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
@@ -22,6 +25,8 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
 
 ### Removed
 - El hueco "Licencias del árbol de wgpu": `cargo deny check` pasó con el árbol de la fase 0.
+- El hueco "Qué pide la biblioteca de ventanas": en Linux, winit 0.30.13 abre ventanas por X11 o
+  por Wayland.
 
 ## v0.1 — 2026-10-01
 

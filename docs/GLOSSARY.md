@@ -69,6 +69,8 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
   permisivas, sin autorización; 2, implementar desde cero; 3, copyleft débil, con autorización del
   autor; 4, GPL-3.0 y AGPL-3.0, con autorización y después del 3. Fuente: 2026-10-01 "Escalera de
   licencias para las dependencias".
+- **modo de cuadros fijos**: la corrida de un ejemplo con `--cuadros N`, que dibuja N cuadros y
+  termina con código 0. Da sí o no sin mirar la pantalla. Fuente: CHANGELOG, v0.2.
 - **mínimo viable**: una ventana, un sprite 2D, un cubo 3D con cámara, entrada de teclado y gravedad
   sobre el cubo, y nada más. Todavía no existe. Fuente: 2026-10-01 "Alcance del mínimo viable, con
   su motivo".
