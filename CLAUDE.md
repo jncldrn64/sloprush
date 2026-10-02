@@ -251,9 +251,8 @@ print(f"regla 8: {pl} planas de {t} ternas = {100*pl/max(t,1):.1f}%")
 EOF
 ```
 
-**Líneas base.** Las reglas 1 y 2 se midieron el 2026-10-02 con el comando que deja afuera las
-citas, sobre 9 archivos y 13462 palabras. Las reglas 3 a 8 se midieron el 2026-10-01, en el PR
-que corrige la siembra, sobre 9 archivos y 11768 palabras.
+**Líneas base.** Las ocho reglas se midieron el 2026-10-02, en el PR de las fases 0 a 4, sobre 9
+archivos y 19371 palabras. Las reglas 1 y 2, con el comando que deja afuera las citas.
 
 | Regla | Línea base |
 |---|---|
@@ -264,7 +263,7 @@ que corrige la siembra, sobre 9 archivos y 11768 palabras.
 | 5. "No verificado" | sin comando: se revisa a mano |
 | 6. Anclas a número de línea | 0 |
 | 7. Párrafos de más de cinco oraciones | 0 |
-| 8. Ternas planas | 0 de 101 ternas, 0,0 % |
+| 8. Ternas planas | 0 de 190 ternas, 0,0 % |
 
 El conteo de la regla 2 depende de su expresión regular. Si se ajusta, se recalculan todos los
 archivos de una vez y se reescribe la línea base con su fecha nueva.
