@@ -19,16 +19,22 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
   tecla y termina con código 0 al cerrarla o tras `--cuadros N`.
 - Fase 1: `tests/ventana.sh`, que prueba la ventana dentro de un Xvfb sin mirar la pantalla.
 - Fase 2: el sprite 2D con textura de damero, el ejemplo `sprite` y `tests/sprite.rs`, que dibuja
-  en un lienzo fuera de pantalla y lee los píxeles de vuelta en GL y en Vulkan.
-- Fase 3: matemática propia, la cámara movida por teclado, el cubo con búfer de profundidad, el
-  ejemplo `cubo` y `tests/cubo.rs`, que comprueba caras y movimiento leyendo el lienzo.
+  en un lienzo fuera de pantalla y lee los píxeles de vuelta en GL y en Vulkan. `tests/lienzo.rs`
+  lee un lienzo cuyas filas llevan relleno.
+- Fase 3: matemática propia, a confirmar por el autor, la cámara movida por teclado, el cubo con
+  búfer de profundidad, el ejemplo `cubo` y `tests/cubo.rs`, que comprueba caras y movimiento
+  leyendo el lienzo.
 - Fase 4: la simulación a paso fijo de frecuencia configurable con integrador propio, el ejemplo
-  `caida`, `tests/caida.rs` sin GPU y `tests/caida.sh` con ventana. Con tope de 30 y de 240
-  cuadros por segundo, el cubo baja 4,986750 m en 60 pasos.
+  `caida`, `tests/caida.rs` y `tests/caida.sh` con ventana. Con tope de 30 y de 240 cuadros por
+  segundo, el cubo baja 4,986750 m en 60 pasos.
+- `tests/gles.sh`, que corre las pruebas con GL sobre OpenGL ES 3.0 forzado en Mesa, porque con
+  Mesa el backend GL de wgpu abre OpenGL de escritorio.
 
 ### Changed
 - La fase 4 ya no espera la decisión entre físicas propias o un crate: la gravedad usa un
-  integrador propio, y la decisión queda para las colisiones.
+  integrador propio, a confirmar por el autor, y la decisión queda para las colisiones.
+- `docs/DESIGN.md`, "Licencias de las dependencias": la matemática del motor se escribe en el
+  motor, a confirmar por el autor.
 - `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
   prosa, y sus líneas base se midieron de nuevo.
 

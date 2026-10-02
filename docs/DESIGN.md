@@ -9,8 +9,8 @@
 Un cambio que rompe un principio de acá se rechaza, lo haya escrito una persona o un modelo. Ante la
 duda, se copia la forma del código que ya existe en vez de inventar un idioma nuevo.
 
-Hoy no hay código. Cada principio dice cómo se comprobará, y lo que todavía no se puede comprobar
-está en la sección 11.
+Cada principio dice cómo se comprueba, y lo que todavía no se puede comprobar está en la sección 11.
+Qué código existe está en `docs/ARCHITECTURE.md`.
 
 ## 1. Rust estable
 
@@ -66,7 +66,10 @@ wgpu".
 **Cómo se comprueba:** se corre la misma escena con la misma entrada en cada nivel y se compara
 el resultado. `cargo test` corre las pruebas de arranque y de dibujo con GL y con Vulkan, y
 `tests/caida.sh`, sin argumento, compara el estado de juego entre los dos niveles: lo que baja el
-cubo tiene que ser la misma cifra. Las dos dieron sí el 2026-10-02 sobre llvmpipe.
+cubo tiene que ser la misma cifra. Con Mesa, el backend GL de wgpu 30.0.1 abre OpenGL de
+escritorio, así que `tests/gles.sh` corre las pruebas con GL otra vez sobre OpenGL ES 3.0
+(`docs/DECISIONS.md`, 2026-10-02 "El nivel base también se prueba sobre OpenGL ES"). Las tres
+dieron sí el 2026-10-02 sobre llvmpipe.
 
 ## 4. La simulación avanza a paso fijo de frecuencia configurable
 
@@ -89,7 +92,9 @@ simulación. La prueba pide dos cosas:
 Con n pasos por segundo, un integrador de Euler se aleja de 4,905 m en una fracción 1/n, que a
 60 Hz es 1,67 %. El comando de abajo da 4,98675 m con Euler semiimplícito y 4,82325 m con Euler
 explícito. `cargo test --test caida` comprueba las dos cosas sin GPU, y `tests/caida.sh` comprueba
-la igualdad con la ventana, en GL y en Vulkan. Las dos dieron sí el 2026-10-02 sobre llvmpipe.
+la igualdad con la ventana, en GL y en Vulkan. La misma suite comprueba además que 2 s de tiempo
+real den los mismos pasos con cuadros de 1/30 s y de 1/240 s, con un paso de diferencia como mucho
+por el redondeo del paso a nanosegundos. Las dos dieron sí el 2026-10-02 sobre llvmpipe.
 
 ```sh
 python3 -c "g,h,n=9.81,1/60,60; print(g*h*h*n*(n+1)/2, g*h*h*n*(n-1)/2)"
@@ -125,6 +130,10 @@ Nunca entran GPL-2.0 sin la cláusula "o posterior", código sin licencia, licen
 licencias no comerciales. Para bajar del escalón 2, el agente se detiene y presenta al autor lo que
 `CLAUDE.md`, sección 8, pide cuando un umbral se dispara.
 
+La matemática del motor, la de la cámara y el cubo, se escribe en el motor aunque haya un crate del
+escalón 1 que la traiga (`docs/DECISIONS.md`, 2026-10-02 "La matemática del cubo y la cámara se
+escribe en el motor"). Queda a confirmar por el autor.
+
 **Por qué:** el criterio es del autor, que quiere licencias parecidas a la MIT y deja las demás como
 última opción. La escalera fue propuesta de la conversación de diseño, aceptada por el autor.
 Decisión: `docs/DECISIONS.md`, 2026-10-01 "Escalera de licencias para las dependencias".
@@ -135,8 +144,10 @@ https://opensource.org/license/unicode-3-0, consultada el 2026-10-01. Las listas
 https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html, consultada el 2026-10-01.
 
 **Cómo se comprueba:** `cargo deny check licenses`, con el escalón 1 en `allow` y cada excepción
-de los escalones 3 y 4 en `exceptions`, una por crate y con su entrada en `docs/DECISIONS.md`.
-Corrido el 2026-10-02, con `exceptions` vacío: `licenses ok`.
+de los escalones 3 y 4 en `exceptions`, una por crate y con su entrada en `docs/DECISIONS.md`. El
+árbol que revisa es el de los objetivos `x86_64-unknown-linux-gnu` y `aarch64-unknown-linux-gnu`
+(`docs/DECISIONS.md`, 2026-10-02 "cargo-deny revisa los dos objetivos Linux"). Corrido el
+2026-10-02, con `exceptions` vacío: `licenses ok`.
 
 ## 7. Versión exacta de cada dependencia
 
@@ -164,7 +175,8 @@ awk '/^\[dependencies\]/{d=1;next} /^\[/{d=0} d && /=/ && !/"=/' Cargo.toml
 **Regla:**
 
 1. Cero avisos en todo el árbol: vulnerabilidades, crates declarados sin mantenimiento y versiones
-   retiradas.
+   retiradas. El árbol es el de los objetivos Linux que se compilan (`docs/DECISIONS.md`,
+   2026-10-02 "cargo-deny revisa los dos objetivos Linux").
 2. Solo crates del registro crates.io, nunca desde un repositorio git.
 3. Cada dependencia directa tiene su primer release hace 1 año o más, y su último release dentro de
    los últimos 12 meses.
@@ -202,9 +214,9 @@ y `sources ok`, con `ignore` vacío, y la regla 3 dio 2020-04-07 y 2026-07-10 pa
 
 ## 9. Los tests
 
-Todavía no hay tests, y cómo se escriben está en la sección 11. Una suite que alguna vez falló de
-forma intermitente se corre N veces, no una, y se queda en esa lista después del arreglo. Cómo se
-corren está en `tests/README.md`.
+Cómo se escriben los tests está en la sección 11. Una suite que alguna vez falló de forma
+intermitente se corre N veces, no una, y se queda en esa lista después del arreglo. Qué suites hay
+y cómo se corren está en `tests/README.md`.
 
 ## 10. Presentación y registro
 
@@ -228,9 +240,9 @@ El motor todavía no tiene interfaz, así que no hay reglas de iconos ni colores
 ## 11. Sin escribir todavía
 
 - **Físicas propias o delegadas a un crate para detectar colisiones.** Sin decidir. La gravedad de
-  la fase 4 usa un integrador propio (`docs/DECISIONS.md`, 2026-10-02 "La gravedad del cubo usa
-  un integrador propio"). Rapier se nombró como candidato; su estado está en
-  `docs/ARCHITECTURE.md`, hueco "Rapier".
+  la fase 4 usa un integrador propio, a confirmar por el autor (`docs/DECISIONS.md`, 2026-10-02
+  "La gravedad del cubo usa un integrador propio"). Rapier se nombró como candidato; su estado
+  está en `docs/ARCHITECTURE.md`, hueco "Rapier".
 - **El umbral de "muchos objetos" del principio 5**, y el lenguaje de script.
 - **El nivel base en macOS.** La tabla de wgpu 30.0.1 no marca ningún backend de macOS como
   "Downlevel/Best Effort": OpenGL ahí necesita ANGLE. Falta decidir si ese camino cuenta como nivel

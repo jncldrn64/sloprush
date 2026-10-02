@@ -1,20 +1,25 @@
 #!/bin/sh
 # Fase 4 con ventana: corre el ejemplo caida en un Xvfb con el dibujo limitado a 30 y a 240 cuadros
-# por segundo y comprueba que todas las corridas impriman la misma bajada y terminen con código 0.
+# por segundo y comprueba que todas las corridas terminen con código 0 e impriman la misma bajada.
 # Sin argumento corre GL y Vulkan, y así compara el estado de juego entre los dos niveles.
 # Pide Xvfb. Uso: tests/caida.sh [gl|vulkan]. Sale con 0 si todo dio sí.
 set -eu
 cargo build -q --example caida
-bajada() {
-  xvfb-run -a -s '-screen 0 1280x720x24' ./target/debug/examples/caida --backend "$1" \
-    --limite-fps "$2" | grep '^\[resultado\] bajó'
-}
+salida="$(mktemp)"
+trap 'rm -f "$salida"' EXIT
 referencia=""
 for backend in ${1:-gl vulkan}; do
   for tope in 30 240; do
-    linea="$(bajada "$backend" "$tope")"
+    if ! xvfb-run -a -s '-screen 0 1280x720x24' ./target/debug/examples/caida \
+      --backend "$backend" --limite-fps "$tope" > "$salida" 2>&1; then
+      echo "no: $backend con tope $tope terminó con un código distinto de 0"
+      cat "$salida"
+      exit 1
+    fi
+    linea="$(grep '^\[resultado\] bajó' "$salida" || true)"
     if [ -z "$linea" ]; then
       echo "no: $backend con tope $tope no imprimió la bajada"
+      cat "$salida"
       exit 1
     fi
     if [ -z "$referencia" ]; then

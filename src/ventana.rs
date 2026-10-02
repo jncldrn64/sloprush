@@ -25,8 +25,9 @@ pub struct Opciones {
     pub eleccion: Eleccion,
     /// Modo de cuadros fijos: dibuja esta cantidad de cuadros y termina con código 0.
     pub cuadros: Option<u64>,
-    /// Tope de cuadros dibujados por segundo. Con tope, la presentación no espera la
-    /// sincronización vertical.
+    /// Tope de cuadros dibujados por segundo. Con tope, la presentación usa un modo sin
+    /// sincronización vertical si la superficie lo ofrece. En Linux, la superficie GL de wgpu
+    /// 30.0.1 solo ofrece `Fifo`, así que ahí el tope no pasa la frecuencia del monitor.
     pub limite_fps: Option<u32>,
 }
 
@@ -157,10 +158,19 @@ impl App<'_> {
             .find(|f| f.is_srgb())
             .or_else(|| capacidades.formats.first().copied())
             .ok_or_else(|| "la superficie no admite ningún formato".to_string())?;
-        let presentacion = if self.opciones.limite_fps.is_some() {
-            wgpu::PresentMode::AutoNoVsync
-        } else {
-            wgpu::PresentMode::AutoVsync
+        let sin_espera = [wgpu::PresentMode::Immediate, wgpu::PresentMode::Mailbox]
+            .into_iter()
+            .find(|m| capacidades.present_modes.contains(m));
+        let presentacion = match (self.opciones.limite_fps, sin_espera) {
+            (Some(_), Some(modo)) => modo,
+            (Some(_), None) => {
+                registro::arranque(
+                    "la superficie solo presenta con sincronización vertical: el tope de dibujo \
+                     no pasa la frecuencia del monitor",
+                );
+                wgpu::PresentMode::Fifo
+            }
+            (None, _) => wgpu::PresentMode::Fifo,
         };
         let tamano = ventana.inner_size();
         let configuracion = wgpu::SurfaceConfiguration {
@@ -210,11 +220,29 @@ impl App<'_> {
         let textura = match estado.superficie.get_current_texture() {
             wgpu::CurrentSurfaceTexture::Success(t)
             | wgpu::CurrentSurfaceTexture::Suboptimal(t) => t,
-            wgpu::CurrentSurfaceTexture::Outdated | wgpu::CurrentSurfaceTexture::Lost => {
+            wgpu::CurrentSurfaceTexture::Outdated => {
                 estado
                     .superficie
                     .configure(&estado.gpu.dispositivo, &estado.configuracion);
                 estado.ventana.request_redraw();
+                return;
+            }
+            // Una superficie perdida no se reconfigura: se crea otra para la misma ventana.
+            wgpu::CurrentSurfaceTexture::Lost => {
+                match estado.gpu.instancia.create_surface(estado.ventana.clone()) {
+                    Ok(nueva) => {
+                        nueva.configure(&estado.gpu.dispositivo, &estado.configuracion);
+                        estado.superficie = nueva;
+                        registro::arranque("superficie perdida, creada de nuevo");
+                        estado.ventana.request_redraw();
+                    }
+                    Err(e) => {
+                        self.error = Some(format!(
+                            "se perdió la superficie y no se pudo crear otra: {e}"
+                        ));
+                        bucle.exit();
+                    }
+                }
                 return;
             }
             wgpu::CurrentSurfaceTexture::Timeout | wgpu::CurrentSurfaceTexture::Occluded => {
@@ -301,8 +329,9 @@ impl ApplicationHandler for App<'_> {
     }
 
     fn exiting(&mut self, _bucle: &ActiveEventLoop) {
-        self.estado = None;
-        registro::cierre("superficie y dispositivo liberados");
+        if self.estado.take().is_some() {
+            registro::cierre("superficie y dispositivo liberados");
+        }
     }
 }
 

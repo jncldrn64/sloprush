@@ -73,11 +73,18 @@ software; en el de desarrollo, un adaptador de hardware. En el equipo de desarro
 1.97.0 y los adaptadores por software de Mesa 25.2.8. `cargo run --example arranque` salió con
 código 0 con `--backend vulkan` (lavapipe) y con `--backend gl` (llvmpipe por EGL, sin pantalla), y
 las dos veces advirtió el renderizador por software. `cargo test` pasó 7 de 7, `cargo clippy` no dio
-advertencias, `cargo deny check` dio `advisories ok, bans ok, licenses ok, sources ok` y `cargo
-audit` revisó 126 crates sin avisos. El binario aarch64 pide como máximo `GLIBC_2.34`. Nada de esto
-corrió en los equipos del autor.
+advertencias, `cargo deny check` dio `advisories ok, bans ok, licenses ok, sources ok` y
+`cargo audit` revisó 126 crates sin avisos. El binario aarch64 pide como máximo `GLIBC_2.34`. Nada
+de esto corrió en los equipos del autor.
 
-**Para cerrarla, en el equipo de desarrollo:**
+Con GL, el campo `driver` dijo `4.5 (Core Profile)`: Mesa le dio a wgpu OpenGL de escritorio y no
+OpenGL ES. Con OpenGL ES forzado, `sh tests/gles.sh` dio sí (`docs/DECISIONS.md`, 2026-10-02 "El
+nivel base también se prueba sobre OpenGL ES"). `cargo deny check` imprime además seis advertencias
+`duplicate` y una `license-not-encountered`, que no son avisos de `docs/DESIGN.md`, "Seguridad de
+las dependencias", y no hacen fallar el chequeo.
+
+**Para cerrarla, en el equipo de desarrollo,** con rustup instalado, que lee `rust-toolchain.toml` y
+baja Rust 1.97.0 y el objetivo aarch64 la primera vez:
 
 ```sh
 git clone https://github.com/jncldrn64/sloprush && cd sloprush
@@ -91,9 +98,13 @@ vulkaninfo --summary
 xrandr
 ```
 
-Tiene que elegir la Radeon, sin la línea `[advertencia]`, en los dos backends. `vulkaninfo` y
-`xrandr` cierran los huecos "Vulkan en el equipo de desarrollo" y "Frecuencia del monitor del equipo
-de desarrollo".
+Tiene que elegir la Radeon, sin la línea `[advertencia]`, en los dos backends. Con `--backend gl`,
+el campo `driver` de la línea `adaptador elegido` dice si abrió OpenGL de escritorio u OpenGL ES;
+con Mesa se espera el de escritorio, y `sh tests/gles.sh` corre las pruebas con GL sobre OpenGL ES.
+
+`cargo deny check` puede imprimir advertencias `duplicate` y `license-not-encountered` y terminar en
+`ok`: eso no es un hallazgo. `vulkaninfo` y `xrandr` cierran los huecos "Vulkan en el equipo de
+desarrollo" y "Frecuencia del monitor del equipo de desarrollo".
 
 **Para llevar el binario al equipo mínimo,** desde el equipo de desarrollo:
 
@@ -120,10 +131,12 @@ sudo apt install libegl1 libegl-mesa0 libgl1-mesa-dri
 ./arranque
 ```
 
-Tiene que elegir la Mali con backend `Gl` y sin la línea `[advertencia]`. Si `/dev/dri/renderD128`
-no deja leer al usuario, falta agregarlo al grupo `render`. Esas corridas cierran los huecos
-"Panfrost en el equipo mínimo", "glibc de bookworm" y "wgpu sobre Panfrost". El hueco "Una ventana
-en el equipo mínimo" se cierra con el ejemplo `ventana`, con los comandos de la fase 1.
+Tiene que elegir la Mali con backend `Gl` y sin la línea `[advertencia]`, y el campo `driver` tiene
+que decir `OpenGL ES`, que es lo que pide el criterio. Si `/dev/dri/renderD128` no deja leer al
+usuario, falta agregarlo al grupo `render`. Esas corridas cierran los huecos "Panfrost en el equipo
+mínimo", "glibc de bookworm" y "wgpu sobre Panfrost". El hueco "Una ventana en el equipo mínimo"
+se cierra con el primer bloque de la fase 1 en el equipo mínimo. Ese bloque ya se puede correr,
+porque el ejemplo `ventana` existe, y no hace falta cerrar antes la fase 1.
 
 ## Fase 1: Ventana y teclado
 
@@ -147,38 +160,58 @@ imprime cada tecla que se aprieta y termina sin error al cerrar la ventana.
 `tests/ventana.sh vulkan` y `tests/ventana.sh gl` dieron sí: el ejemplo abrió la ventana, imprimió
 `[entrada] tecla Code(KeyA)` y `Code(KeyB)` para las teclas que mandó xdotool, y al recibir el
 pedido de cierre de un gestor de ventanas salió con código 0. `--cuadros 5` también salió con
-código 0 en los dos backends. Ninguna corrida pasó por una pantalla real.
+código 0 en los dos backends.
+
+Ninguna corrida pasó por una pantalla real, y todas fueron por X11. El camino por Wayland, el que
+usa cage en el equipo mínimo, no corrió.
+
+En el commit de la fase, el hook de pre-commit corrió `cargo fmt --check`, `cargo clippy` sin
+advertencias y `cargo test`, y el de pre-push corrió `cargo deny check`, con los cuatro chequeos en
+`ok`, y `cargo audit`, que revisó 247 crates sin avisos. El binario aarch64 de `ventana` pide como
+máximo `GLIBC_2.34`.
 
 **Para cerrarla, en el equipo de desarrollo:**
 
 ```sh
-cargo run --example ventana -- --backend vulkan
-cargo run --example ventana -- --backend gl
+cargo run --example ventana -- --backend vulkan; echo $?
+cargo run --example ventana -- --backend gl; echo $?
 ```
 
 Con cada uno: se ve una ventana azul oscura, cada tecla apretada sale como una línea
-`[entrada] tecla`, y al cerrar la ventana el comando termina sin error. `echo $?` da 0.
+`[entrada] tecla`, y al cerrar la ventana el comando termina sin error. Cada `echo $?` da 0.
 
 **Para llevar el binario al equipo mínimo,** desde el equipo de desarrollo, con la variable `PI` de
-la fase 0:
+la fase 0. Las fases 2 a 4 usan el mismo bloque con su ejemplo en `EJEMPLO`:
 
 ```sh
-cargo build --release --target aarch64-unknown-linux-gnu --example ventana
-scp target/aarch64-unknown-linux-gnu/release/examples/ventana "$PI":
+EJEMPLO=ventana
+cargo build --release --target aarch64-unknown-linux-gnu --example "$EJEMPLO"
+aarch64-linux-gnu-objdump -T "target/aarch64-unknown-linux-gnu/release/examples/$EJEMPLO" \
+  | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
+scp "target/aarch64-unknown-linux-gnu/release/examples/$EJEMPLO" "$PI":
 ```
+
+La versión de glibc que imprime `objdump` tiene que ser 2.36 o menor.
 
 **Para cerrarla, en el equipo mínimo,** desde la consola de la placa, con un monitor y un teclado
 conectados:
 
 ```sh
-sudo apt install cage
-cage -- ./ventana --backend gl --cuadros 600 > ventana.log; echo $?; cat ventana.log
+sudo apt install cage libwayland-egl1
+cage -- sh -c './ventana --backend gl --cuadros 600 > ventana.log 2>&1
+  echo "código $?" >> ventana.log'
+cat ventana.log
 ```
 
 cage no deja cerrar la ventana a mano, así que el ejemplo termina solo tras 600 cuadros, unos 10
 segundos si la pantalla va a 60 Hz. Mientras tanto se ve la ventana azul a pantalla completa y se
-aprietan algunas teclas. Después, `echo $?` tiene que dar 0 y `ventana.log` tiene que traer una
-línea `[entrada] tecla` por cada tecla. Eso cierra el hueco "Una ventana en el equipo mínimo".
+aprietan algunas teclas. Después, `ventana.log` tiene que terminar con `código 0` y traer una línea
+`[entrada] tecla` por cada tecla. Eso cierra el hueco "Una ventana en el equipo mínimo".
+
+El código se anota desde adentro porque cage 0.1.4, la de bookworm, sale con 0 aunque el ejemplo
+falle. libwayland-egl1 hace falta porque bajo cage wgpu abre la superficie GL por Wayland con esa
+biblioteca, y ninguno de los otros paquetes la trae. Fuentes: `docs/DECISIONS.md`, 2026-10-02
+"Fuentes consultadas en la revisión de las fases 0 a 4".
 
 ## Fase 2: Sprite 2D
 
@@ -198,13 +231,19 @@ o no sin mirar la pantalla. Que el sprite se vea en la ventana lo comprueba el a
 
 **Bloqueada por:** fase 1.
 
-**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe. `cargo test --test
-sprite` dibujó el sprite en un lienzo de 64 por 64 sin ventana, con GL y con Vulkan, y leyó los
-píxeles de vuelta con el fondo negro en las esquinas y cada casilla del damero en su lugar. Con el
-sprite corrido un cuarto de pantalla, la prueba falla.
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe.
+`cargo test --test sprite` dibujó el sprite en un lienzo de 64 por 64 sin ventana, con GL y con
+Vulkan, y leyó los píxeles de vuelta: el fondo negro en cuatro puntos y cuatro de las 16 casillas
+del damero con su color. Con el sprite corrido un cuarto de pantalla, la prueba falla.
+
+`cargo test --test lienzo` leyó entero un lienzo de 50 por 30, cuyas filas llevan relleno, y falla
+si `Lienzo::leer` no salta el relleno. `sh tests/gles.sh` corrió las dos sobre OpenGL ES 3.0 y dio
+sí.
 
 Dentro de un Xvfb, el ejemplo `sprite` con `--cuadros 30` salió con código 0 en los dos backends, y
-advirtió el renderizador por software, como corresponde a llvmpipe.
+advirtió el renderizador por software, como corresponde a llvmpipe. En el commit de la fase, el
+hook de pre-commit corrió `cargo fmt --check`, `cargo clippy` sin advertencias y `cargo test`. El
+binario aarch64 de `sprite` pide como máximo `GLIBC_2.34`.
 
 **Para cerrarla, en el equipo de desarrollo:**
 
@@ -217,14 +256,16 @@ cargo run --example sprite -- --backend gl --cuadros 300; echo $?
 Cada `echo $?` tiene que dar 0, sin líneas `[advertencia]`. A la vista: un cuadrado con damero
 naranja y crema en el centro de una ventana azul oscura.
 
-**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, cambiando
-`ventana` por `sprite`:
+**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, con
+`EJEMPLO=sprite`:
 
 ```sh
-cage -- ./sprite --backend gl --cuadros 300 > sprite.log; echo $?; grep -c advertencia sprite.log
+cage -- sh -c './sprite --backend gl --cuadros 300 > sprite.log 2>&1
+  echo "código $?" >> sprite.log'
+grep código sprite.log; grep -c advertencia sprite.log
 ```
 
-`echo $?` tiene que dar 0 y `grep -c` tiene que dar 0. A la vista, el mismo damero.
+El primer `grep` tiene que dar `código 0` y el segundo, 0. A la vista, el mismo damero.
 
 ## Fase 3: Cubo 3D con cámara
 
@@ -246,34 +287,49 @@ comprueba el autor.
 
 **Bloqueada por:** fase 1.
 
-**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe. `cargo test --test
-cubo` dibujó el cubo en un lienzo de 64 por 64 con GL y con Vulkan y leyó los píxeles: de frente se
-ve la cara +z, desde la derecha la +x, y tras cuatro pasos con D el centro queda vacío y el cubo a
-la izquierda. Sin la prueba de profundidad, la prueba falla.
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe.
+`cargo test --test cubo` dibujó el cubo en un lienzo de 64 por 64 con GL y con Vulkan y leyó los
+píxeles: de frente se ve la cara +z, desde la derecha la +x, tras cuatro pasos con R el cubo queda
+abajo con la cara +y encima, y tras cuatro pasos con D el centro queda vacío y el cubo a la
+izquierda. Sin la prueba de profundidad, o con la perspectiva dada vuelta en vertical, la prueba
+falla. `sh tests/gles.sh` la corrió sobre OpenGL ES 3.0 y dio sí.
 
-Dentro de un Xvfb, el ejemplo `cubo` con `--cuadros 30` salió con código 0 en los dos backends, y
-las teclas W, D, D y R que mandó xdotool movieron la cámara un paso de 0,25 cada una.
+Dentro de un Xvfb, el ejemplo `cubo` con `--cuadros 30` salió con código 0 en los dos backends. En
+otra corrida, con `--cuadros 600`, las teclas W, D, D y R que mandó xdotool movieron la cámara un
+paso de 0,25 cada una, y salió con código 0. En el commit de la fase, el hook de pre-commit corrió
+`cargo fmt --check`, `cargo clippy` sin advertencias y `cargo test`. El binario aarch64 de `cubo`
+pide como máximo `GLIBC_2.34`.
 
 **Para cerrarla, en el equipo de desarrollo:**
 
 ```sh
 cargo test --test cubo
-cargo run --example cubo -- --backend vulkan
-cargo run --example cubo -- --backend gl
+cargo run --example cubo -- --backend vulkan --cuadros 300; echo $?
+cargo run --example cubo -- --backend gl --cuadros 300; echo $?
+cargo run --example cubo -- --backend vulkan; echo $?
+cargo run --example cubo -- --backend gl; echo $?
 ```
 
-Se ve el cubo con tres caras de colores distintos. W, A, S, D, las flechas, R y F mueven la cámara,
-y cada paso sale como una línea `[resultado] cámara en`. Al cerrar la ventana, `echo $?` da 0.
+Las dos primeras corridas terminan solas: cada `echo $?` tiene que dar 0, sin líneas
+`[advertencia]`. En las dos últimas se ve el cubo con tres caras de colores distintos. W, A, S, D,
+las flechas, R y F mueven la cámara, y cada paso sale como una línea `[resultado] cámara en`. Al
+cerrar la ventana, `echo $?` da 0.
 
-**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, cambiando
-`ventana` por `cubo`:
+La matemática de la cámara y del cubo se escribió en el motor y no con un crate del escalón 1.
+Antes de pasar la fase a `cerrada`, el autor confirma o reemplaza la decisión 2026-10-02 "La
+matemática del cubo y la cámara se escribe en el motor".
+
+**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, con
+`EJEMPLO=cubo`:
 
 ```sh
-cage -- ./cubo --backend gl --cuadros 600 > cubo.log; echo $?; grep -c advertencia cubo.log
+cage -- sh -c './cubo --backend gl --cuadros 600 > cubo.log 2>&1
+  echo "código $?" >> cubo.log'
+grep código cubo.log; grep -c advertencia cubo.log; grep 'cámara en' cubo.log
 ```
 
-Mientras corre se aprietan algunas teclas de movimiento. `echo $?` tiene que dar 0, `grep -c`
-tiene que dar 0, y `cubo.log` tiene que traer las líneas `[resultado] cámara en`.
+Mientras corre se aprietan algunas teclas de movimiento. El primer `grep` tiene que dar `código 0`,
+el segundo 0, y el tercero una línea `[resultado] cámara en` por cada tecla.
 
 ## Fase 4: Gravedad sobre el cubo
 
@@ -294,40 +350,61 @@ menos de 2 % de 4,905 m.
 
 **Bloquea:** nada.
 
-**Bloqueada por:** fase 3. La gravedad usa un integrador propio (`docs/DECISIONS.md`, 2026-10-02
-"La gravedad del cubo usa un integrador propio").
+**Bloqueada por:** fase 3. La gravedad usa un integrador propio, a confirmar por el autor
+(`docs/DECISIONS.md`, 2026-10-02 "La gravedad del cubo usa un integrador propio").
 
-**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe. `cargo test --test
-caida` simuló la caída sin GPU con cuadros de 1/30 s, de 1/240 s y de largos irregulares: los tres
-dieron la misma bajada, bit a bit, y a 60 Hz se aleja 1,67 % de 4,905 m. Sin el tope de pasos, la
-prueba falla.
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe.
+`cargo test --test caida` simuló la caída sin GPU con cuadros de 1/30 s, de 1/240 s y de largos
+irregulares: los tres dieron la misma bajada, bit a bit, y a 60 Hz se aleja 1,67 % de 4,905 m.
+
+2 s de tiempo real dieron 120 pasos con cuadros de 1/240 s y 119 con cuadros de 1/30 s, porque cada
+paso dura 16 666 667 ns; con un paso por cuadro, esa prueba falla. Sin el tope de pasos, falla la de
+30 contra 240.
+
+La misma suite dibujó el cubo en un lienzo, con GL y con Vulkan, a la altura inicial y tras 1 s
+simulado, y lo encontró arriba y después abajo. `sh tests/gles.sh` corrió esa parte sobre OpenGL ES
+3.0 y dio sí.
 
 Dentro de un Xvfb, `tests/caida.sh` corrió el ejemplo con tope de 30 y de 240 cuadros por segundo,
 en GL y en Vulkan. Las cuatro corridas imprimieron `bajó 4.986750 m en 60 pasos` y salieron con
-código 0.
+código 0, que el script comprueba. En el commit de la fase, el hook de pre-commit corrió
+`cargo fmt --check`, `cargo clippy` sin advertencias y `cargo test`, y el de pre-push corrió
+`cargo deny check`, con los cuatro chequeos en `ok`, y `cargo audit`, que revisó 247 crates sin
+avisos. El binario aarch64 de `caida` pide como máximo `GLIBC_2.34`.
+
+Con GL, la superficie de wgpu 30.0.1 solo ofrece la presentación `Fifo`, que espera la
+sincronización vertical. En una pantalla real, el tope de 240 con GL queda en la frecuencia del
+monitor, y el ejemplo lo avisa en una línea `[arranque]`. La comparación sigue siendo entre dos
+ritmos de dibujo distintos.
 
 **Para cerrarla, en el equipo de desarrollo:**
 
 ```sh
 cargo test --test caida
-cargo run --release --example caida -- --backend vulkan --limite-fps 30
-cargo run --release --example caida -- --backend vulkan --limite-fps 240
-cargo run --release --example caida -- --backend gl --limite-fps 240
+cargo run --release --example caida -- --backend vulkan --limite-fps 30; echo $?
+cargo run --release --example caida -- --backend vulkan --limite-fps 240; echo $?
+cargo run --release --example caida -- --backend gl --limite-fps 240; echo $?
 ```
 
-Las tres corridas tienen que imprimir la misma línea `[resultado] bajó` y terminar con `echo $?` en
-0. A la vista, el cubo cae y la ventana se cierra sola tras 1 s simulado.
+Las tres corridas tienen que imprimir la misma línea `[resultado] bajó`, y cada `echo $?` tiene
+que dar 0. A la vista, el cubo cae y la ventana se cierra sola tras 1 s simulado. Antes de pasar la
+fase a `cerrada`, el autor confirma o reemplaza la decisión 2026-10-02 "La gravedad del cubo usa un
+integrador propio".
 
-**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, cambiando
-`ventana` por `caida`:
+**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, con
+`EJEMPLO=caida`:
 
 ```sh
-cage -- ./caida --backend gl --limite-fps 30 > caida-30.log; echo $?
-cage -- ./caida --backend gl --limite-fps 240 > caida-240.log; echo $?
-grep bajó caida-30.log caida-240.log
+cage -- sh -c './caida --backend gl --limite-fps 30 > caida-30.log 2>&1
+  echo "código $?" >> caida-30.log'
+cage -- sh -c './caida --backend gl --limite-fps 240 > caida-240.log 2>&1
+  echo "código $?" >> caida-240.log'
+grep -h código caida-30.log caida-240.log; grep -h bajó caida-30.log caida-240.log
 ```
 
-Las dos líneas de `grep` tienen que traer la misma cifra, y la misma que en el equipo de desarrollo.
+El primer `grep` tiene que dar dos veces `código 0`. El segundo, dos líneas con la misma cifra, y
+la misma que en el equipo de desarrollo. Ahí el tope de 240 queda en la frecuencia del monitor,
+porque el equipo mínimo dibuja con GL.
 
 ## Backlog
 

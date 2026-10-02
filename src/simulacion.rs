@@ -45,13 +45,12 @@ pub struct Simulacion {
 impl Simulacion {
     /// Una simulación de paso fijo a `frecuencia` Hz. La frecuencia no cambia durante la partida.
     pub fn nueva(frecuencia: u32, cuerpo: Cuerpo) -> Self {
-        assert!(
-            frecuencia > 0,
-            "la frecuencia del paso tiene que ser mayor que cero"
+        let paso_real = paso_real(frecuencia).expect(
+            "la frecuencia del paso tiene que ser mayor que cero y dar un paso de 1 ns o más",
         );
         Simulacion {
             frecuencia,
-            paso_real: Duration::from_secs_f64(1.0 / f64::from(frecuencia)),
+            paso_real,
             acumulado: Duration::ZERO,
             pasos: 0,
             cuerpo,
@@ -93,6 +92,16 @@ impl Simulacion {
     }
 }
 
+/// Cuánto tiempo real dura un paso a `frecuencia` Hz. `None` si la frecuencia es cero o tan alta
+/// que el paso redondea a cero nanosegundos, porque entonces `avanzar` daría pasos sin tiempo.
+fn paso_real(frecuencia: u32) -> Option<Duration> {
+    if frecuencia == 0 {
+        return None;
+    }
+    let paso = Duration::from_secs_f64(1.0 / f64::from(frecuencia));
+    (!paso.is_zero()).then_some(paso)
+}
+
 /// Saca `--hz <valor>` de los argumentos y devuelve la frecuencia y el resto. Sin la opción,
 /// [`FRECUENCIA_POR_DEFECTO`].
 pub fn separar_frecuencia(args: &[String]) -> Result<(u32, Vec<String>), String> {
@@ -105,8 +114,12 @@ pub fn separar_frecuencia(args: &[String]) -> Result<(u32, Vec<String>), String>
                 .get(i + 1)
                 .ok_or_else(|| "a --hz le falta el valor".to_string())?;
             frecuencia = match texto.parse::<u32>() {
-                Ok(n) if n > 0 => n,
-                _ => return Err(format!("--hz pide un entero mayor que cero, no {texto}")),
+                Ok(n) if paso_real(n).is_some() => n,
+                _ => {
+                    return Err(format!(
+                        "--hz pide un entero mayor que cero con un paso de 1 ns o más, no {texto}"
+                    ));
+                }
             };
             i += 2;
         } else {
@@ -154,5 +167,12 @@ mod pruebas {
         assert_eq!(hz, 144);
         assert_eq!(resto, vec!["x".to_string()]);
         assert!(separar_frecuencia(&["--hz".to_string(), "0".to_string()]).is_err());
+    }
+
+    #[test]
+    fn una_frecuencia_con_paso_de_cero_ns_es_error() {
+        let args = vec!["--hz".to_string(), "3000000000".to_string()];
+        assert!(separar_frecuencia(&args).is_err());
+        assert!(paso_real(1_000_000).is_some());
     }
 }

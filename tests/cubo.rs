@@ -3,7 +3,7 @@
 //! Dibuja en un lienzo de 64 por 64 sin ventana y lee los píxeles de vuelta de la GPU.
 
 use sloprush::camara::Camara;
-use sloprush::cubo::{CARA_MAS_X, CARA_MAS_Z, COLORES, Cubo};
+use sloprush::cubo::{CARA_MAS_X, CARA_MAS_Y, CARA_MAS_Z, COLORES, Cubo};
 use sloprush::dibujo::Destino;
 use sloprush::gpu::{self, Eleccion, Gpu};
 use sloprush::lienzo::{Lienzo, parecido, pixel};
@@ -71,6 +71,25 @@ fn comprobar(eleccion: Eleccion) {
         "de costado: {:?}",
         en(&p, 32, 32)
     );
+
+    // Cuatro pasos hacia arriba con R: el cubo queda abajo, y por encima de la cara +z asoma la +y.
+    // Una imagen dada vuelta en vertical deja abajo el fondo.
+    let mut alta = Camara::mirando([0.0, 0.0, 3.0], ORIGEN);
+    for _ in 0..4 {
+        assert!(alta.mover(KeyCode::KeyR));
+    }
+    let p = banco.ver(&alta);
+    for (x, y, esperado, que) in [
+        (32, 56, COLORES[CARA_MAS_Z], "cara +z abajo"),
+        (32, 45, COLORES[CARA_MAS_Y], "cara +y encima"),
+        (32, 20, NEGRO, "fondo arriba"),
+    ] {
+        assert!(
+            parecido(en(&p, x, y), esperado, TOLERANCIA),
+            "tras R, {que} en ({x},{y}): {:?}",
+            en(&p, x, y)
+        );
+    }
 
     // Cuatro pasos a la derecha con D: el cubo queda a la izquierda y el centro, vacío.
     for _ in 0..4 {

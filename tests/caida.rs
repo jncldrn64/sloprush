@@ -1,12 +1,20 @@
 //! Fase 4: la caída del cubo no depende de cuántos cuadros se dibujan, y a 60 Hz se aleja menos de
 //! 2 % de la fórmula continua.
 //!
-//! Corre sin GPU: simula la sucesión de tiempos de cuadro que da un dibujo limitado a 30 y a 240
-//! cuadros por segundo.
+//! Las pruebas de la simulación corren sin GPU: simulan la sucesión de tiempos de cuadro que da un
+//! dibujo limitado a 30 y a 240 cuadros por segundo. Las dos últimas dibujan el cubo a la altura
+//! de la simulación en un lienzo de 64 por 64, con la cámara del ejemplo `caida`, y leen los
+//! píxeles de vuelta. Prueban las piezas de la biblioteca que usa el ejemplo, no el ejemplo.
 
 use std::time::Duration;
 
+use sloprush::camara::Camara;
+use sloprush::cubo::{CARA_MAS_Z, COLORES, Cubo};
+use sloprush::dibujo::Destino;
+use sloprush::gpu::{self, Eleccion};
+use sloprush::lienzo::{Lienzo, parecido, pixel};
 use sloprush::simulacion::{Cuerpo, FRECUENCIA_POR_DEFECTO, GRAVEDAD, Simulacion};
+use sloprush::wgpu;
 
 /// Lo que baja el cuerpo en 1 s simulado a `hz`, con un cuadro dibujado cada `periodo`.
 fn caida(hz: u32, periodo: Duration) -> f32 {
@@ -31,6 +39,25 @@ fn con_el_dibujo_a_30_y_a_240_baja_exactamente_lo_mismo() {
         a_30.to_bits(),
         a_240.to_bits(),
         "a 30: {a_30}, a 240: {a_240}"
+    );
+}
+
+#[test]
+fn el_mismo_tiempo_real_da_los_mismos_pasos_a_30_y_a_240() {
+    // 2 s de tiempo real en cuadros de 1/30 s y de 1/240 s, sin tope de pasos.
+    let pasos = |periodo: Duration, cuadros: u32| {
+        let mut s = Simulacion::nueva(FRECUENCIA_POR_DEFECTO, Cuerpo::en_reposo(0.0));
+        for _ in 0..cuadros {
+            s.avanzar(periodo, u64::MAX);
+        }
+        s.pasos()
+    };
+    let a_30 = pasos(Duration::from_secs_f64(1.0 / 30.0), 60);
+    let a_240 = pasos(Duration::from_secs_f64(1.0 / 240.0), 480);
+    // Cada paso dura 16 666 667 ns, un poco más que 1/60 s, así que 2 s dan 119 o 120 pasos.
+    assert!(
+        a_30.abs_diff(a_240) <= 1 && a_30.abs_diff(120) <= 1,
+        "a 30: {a_30} pasos, a 240: {a_240}"
     );
 }
 
@@ -68,4 +95,67 @@ fn el_desvio_es_1_sobre_n_con_n_pasos_por_segundo() {
             desvio(bajada)
         );
     }
+}
+
+const LADO: u32 = 64;
+const NEGRO: [u8; 4] = [0, 0, 0, 255];
+const TOLERANCIA: u8 = 2;
+
+/// Dibuja el cubo a la altura inicial del ejemplo `caida` y después de 1 s simulado, y comprueba
+/// que bajó en la imagen: arriba al principio, abajo al final.
+fn comprobar_en_pantalla(eleccion: Eleccion) {
+    let instancia = gpu::crear_instancia(eleccion, None);
+    let gpu =
+        gpu::iniciar(instancia, None).unwrap_or_else(|e| panic!("sin GPU con {eleccion:?}: {e}"));
+    let formato = wgpu::TextureFormat::Rgba8UnormSrgb;
+    let lienzo = Lienzo::nuevo(&gpu, LADO, LADO, formato);
+    let mut cubo = Cubo::nuevo(&gpu, formato);
+    // La misma cámara que el ejemplo `caida`.
+    let camara = Camara::mirando([0.0, -0.5, 9.0], [0.0, -0.5, 0.0]);
+    let mut simulacion = Simulacion::nueva(FRECUENCIA_POR_DEFECTO, Cuerpo::en_reposo(2.0));
+    let mut ver = |altura: f32| {
+        let destino = Destino {
+            vista: &lienzo.vista,
+            ancho: LADO,
+            alto: LADO,
+        };
+        cubo.dibujar(
+            &gpu,
+            destino,
+            &camara,
+            [0.0, altura, 0.0],
+            wgpu::Color::BLACK,
+        );
+        lienzo.leer(&gpu).expect("lectura del lienzo")
+    };
+    // A 2 m, la cara +z cae cerca de la fila 9; a -2,99 m, cerca de la 54.
+    let (arriba, abajo) = ((32, 9), (32, 54));
+    let antes = ver(simulacion.cuerpo.altura);
+    simulacion.avanzar(Duration::from_secs(2), u64::from(FRECUENCIA_POR_DEFECTO));
+    let despues = ver(simulacion.cuerpo.altura);
+    for (nombre, p, cubo_en, vacio_en) in [
+        ("antes", &antes, arriba, abajo),
+        ("después", &despues, abajo, arriba),
+    ] {
+        let color = pixel(p, LADO, cubo_en.0, cubo_en.1);
+        assert!(
+            parecido(color, COLORES[CARA_MAS_Z], TOLERANCIA),
+            "{nombre}, cubo en {cubo_en:?}: {color:?}"
+        );
+        let color = pixel(p, LADO, vacio_en.0, vacio_en.1);
+        assert!(
+            parecido(color, NEGRO, TOLERANCIA),
+            "{nombre}, fondo en {vacio_en:?}: {color:?}"
+        );
+    }
+}
+
+#[test]
+fn cae_en_pantalla_en_el_nivel_base_con_gl() {
+    comprobar_en_pantalla(Eleccion::Gl);
+}
+
+#[test]
+fn cae_en_pantalla_en_el_nivel_completo_con_vulkan() {
+    comprobar_en_pantalla(Eleccion::Vulkan);
 }

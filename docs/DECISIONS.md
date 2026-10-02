@@ -733,7 +733,12 @@ en el nivel base.
 
 **Decisión:** `gpu::iniciar` pide el dispositivo con `Limits::downlevel_webgl2_defaults()`, los
 límites más bajos que define wgpu, y del adaptador toma solo el tamaño máximo de textura. No pide
-funciones opcionales. Así, lo que corre en Vulkan no usa nada que falte en el nivel base.
+funciones opcionales. Así, ninguna cifra que use el nivel completo falta en el nivel base.
+
+Los límites topean cifras y nada más. Las `DownlevelFlags` del adaptador no bajan con ellos: el
+2026-10-02, sobre llvmpipe, a GL le faltaban siete, entre ellas `VIEW_FORMATS`, y a OpenGL ES 3.0
+dieciséis, entre ellas `COMPUTE_SHADERS`; a Vulkan, ninguna. Lo que el nivel base no tiene por esa
+vía lo encuentran las pruebas que dibujan también con GL y con OpenGL ES.
 
 **Alternativas:** `Limits::downlevel_defaults()`, que wgpu documenta para OpenGL y no para WebGL2.
 Se descartó porque el navegador está entre las plataformas del Backlog.
@@ -747,7 +752,8 @@ de Windows y macOS. Hoy el motor se comprueba solo en Linux (`docs/REQUIREMENTS.
 
 **Decisión:** `deny.toml` limita el grafo a `x86_64-unknown-linux-gnu` y
 `aarch64-unknown-linux-gnu`. Una plataforma que salga del Backlog suma su objetivo en el mismo PR.
-El 2026-10-02, el árbol sin ese filtro también dio `ok` en los cuatro chequeos.
+El 2026-10-02 también pasó sin el filtro. Cambia `docs/DESIGN.md`, "Licencias de las
+dependencias" y "Seguridad de las dependencias".
 
 **Alternativas:** Revisar todos los objetivos. Se descartó porque un aviso sobre un crate de una
 plataforma que todavía no se compila frenaría una fase de Linux.
@@ -761,12 +767,14 @@ cada consulta.
 
 **Decisión:** Se registran las fuentes leídas el 2026-10-02 para la fase 0. No se copió código.
 
-- Código y documentación publicados de wgpu 30.0.1 y wgpu-types 30.0.1, en el paquete que baja
+- Código y documentación publicados de wgpu 30.0.1 y wgpu-types 30.0.1,
+  https://static.crates.io/crates/wgpu/wgpu-30.0.1.crate y
+  https://static.crates.io/crates/wgpu-types/wgpu-types-30.0.1.crate, los paquetes que baja
   `cargo fetch`, licencia `MIT OR Apache-2.0`. Se tomaron las firmas de `Instance::new`,
   `InstanceDescriptor`, `enumerate_adapters`, `request_adapter`, `request_device`,
   `DeviceDescriptor` y `Limits::downlevel_webgl2_defaults`.
-- pollster 1.0.1, en el mismo paquete, licencia `Apache-2.0/MIT`. Se tomó la firma de
-  `block_on`.
+- pollster 1.0.1, https://static.crates.io/crates/pollster/pollster-1.0.1.crate, licencia
+  `Apache-2.0/MIT`. Se tomó la firma de `block_on`.
 - API de crates.io, https://crates.io/api/v1/crates/ más el nombre del crate. Se tomaron licencia y
   fechas de wgpu, winit, pollster, bytemuck y raw-window-handle.
 - rustup, "Overrides", https://rust-lang.github.io/rustup/overrides.html. Se tomó la forma de
@@ -820,7 +828,9 @@ barra de título en Wayland con fuentes propias.
 
 **Alternativas:** Las funciones por defecto de winit, con las decoraciones Adwaita. Se descartaron
 porque suman crates de fuentes y de dibujo que el mínimo viable no usa. Sin ellas, en un compositor
-Wayland que no dibuja decoraciones la ventana sale sin barra de título; cage no las dibuja igual.
+Wayland que pide decoraciones del cliente, winit dibuja el marco simple de smithay-client-toolkit:
+una barra de 24 píxeles con botones y sin el título. No verificado en un compositor, porque nada
+corrió sobre Wayland.
 
 **Estado:** `vigente`
 
@@ -835,7 +845,8 @@ cada consulta.
   licencia `Apache-2.0`. Se tomaron sus funciones de compilación, que en Linux solo trae los
   backends `x11` y `wayland` en `src/platform_impl/linux/`, y las firmas de `ApplicationHandler`,
   `EventLoop::run_app`, `owned_display_handle` y `KeyEvent`.
-- Código publicado de wgpu 30.0.1. Se tomaron `Surface::get_current_texture`, que devuelve
+- Paquete publicado de wgpu 30.0.1, https://static.crates.io/crates/wgpu/wgpu-30.0.1.crate,
+  licencia `MIT OR Apache-2.0`. Se tomaron `Surface::get_current_texture`, que devuelve
   `CurrentSurfaceTexture`, `Queue::present` y `SurfaceConfiguration`.
 - Página de manual de cage en bookworm, https://manpages.debian.org/bookworm/cage/cage.1.en.html.
   Se tomó la forma `cage [--] aplicación [argumentos]`. Licencia de la página: no verificada.
@@ -877,10 +888,11 @@ cada consulta.
 
 **Decisión:** Se registra la fuente leída el 2026-10-02 para la fase 2. No se copió código.
 
-- Código publicado de wgpu 30.0.1 y wgpu-types 30.0.1, licencia `MIT OR Apache-2.0`. Se tomaron
-  `RenderPipelineDescriptor`, `VertexState`, `FragmentState`, `TexelCopyTextureInfo`,
-  `TexelCopyBufferInfo`, `TexelCopyBufferLayout`, `COPY_BYTES_PER_ROW_ALIGNMENT`,
-  `Buffer::map_async`, `Buffer::get_mapped_range` y `PollType::wait_indefinitely`.
+- Paquetes publicados de wgpu 30.0.1 y wgpu-types 30.0.1, los de la fase 0, licencia
+  `MIT OR Apache-2.0`. Se tomaron `RenderPipelineDescriptor`, `VertexState`, `FragmentState`,
+  `TexelCopyTextureInfo`, `TexelCopyBufferInfo`, `TexelCopyBufferLayout`,
+  `COPY_BYTES_PER_ROW_ALIGNMENT`, `Buffer::map_async`, `Buffer::get_mapped_range` y
+  `PollType::wait_indefinitely`.
 
 **Estado:** `vigente`
 
@@ -888,16 +900,21 @@ cada consulta.
 
 **Contexto:** La fase 3 necesita vectores, una matriz de vista y una de perspectiva. Hay crates
 del escalón 1 que las traen, y la escalera de licencias pone un crate permisivo antes que
-implementar. El autor, en cambio, pidió el motor escrito en Rust desde cero, con la cita que guarda
-la entrada 2026-10-01 "El lenguaje es Rust estable, con su motivo".
+implementar, con la cita del autor que guarda la entrada 2026-10-01 "Escalera de licencias para las
+dependencias". El autor también pidió el motor escrito en Rust desde cero, con la cita que guarda
+la entrada 2026-10-01 "El lenguaje es Rust estable, con su motivo". Las dos citas tiran para lados
+distintos, y el pedido de la sesión del 2026-10-02 no autorizó esta decisión.
 
 **Decisión:** `src/matematica.rs` escribe lo que usan el cubo y la cámara: suma, resta, producto
 escalar y vectorial, normalizar, `perspectiva`, `mirar`, `trasladar` y `multiplicar`, con sus
 pruebas. La escalera se aplicó a lo que queda fuera del dominio del motor, como la ventana, la API
 gráfica y la espera de futuros, y el código propio quedó para lo que es el motor.
 
-**Alternativas:** Un crate de álgebra lineal del escalón 1. Se dejó afuera por ese pedido del
-autor. La línea entre las dos reglas no está escrita, y el autor la puede fijar.
+Cambia `docs/DESIGN.md`, "Licencias de las dependencias". Queda a confirmar por el autor: si la
+rechaza, el cambio se limita a `src/matematica.rs`, `src/camara.rs` y `src/cubo.rs`.
+
+**Alternativas:** Un crate de álgebra lineal del escalón 1. Se dejó afuera por el pedido del motor
+escrito desde cero.
 
 **Estado:** `vigente`
 
@@ -920,7 +937,8 @@ cada consulta.
 
 **Decisión:** Se registra la fuente leída el 2026-10-02 para la fase 3. No se copió código.
 
-- Código publicado de wgpu 30.0.1, licencia `MIT OR Apache-2.0`. Se tomaron `DepthStencilState`,
+- Paquete publicado de wgpu 30.0.1, https://static.crates.io/crates/wgpu/wgpu-30.0.1.crate,
+  licencia `MIT OR Apache-2.0`. Se tomaron `DepthStencilState`,
   `RenderPassDepthStencilAttachment`, `VertexBufferLayout` y `VertexAttribute`.
 
 La matriz de perspectiva con profundidad de 0 a 1 y la de vista se escribieron sin fuente
@@ -957,5 +975,66 @@ tantos pasos como la frecuencia, 1 s simulado. El tiempo de reloj solo decide cu
 paso. Así la bajada depende de la cantidad de pasos y no de cómo se repartieron entre los cuadros.
 
 **Alternativas:** Terminar a 1 s de reloj. Se descartó por el paso de más.
+
+**Estado:** `vigente`
+
+## 2026-10-02: El nivel base también se prueba sobre OpenGL ES
+
+**Contexto:** `docs/DESIGN.md`, "Dos niveles gráficos", pone en el nivel base de Linux lo que la
+tabla de wgpu llama OpenGL ES 3.0+. Con EGL, wgpu 30.0.1 pide primero un contexto de OpenGL 3.3 de
+escritorio si EGL lo ofrece, y OpenGL ES solo si eso falla. Mesa lo ofrece, así que sobre llvmpipe
+el backend GL abrió OpenGL 4.5 de escritorio en todas las corridas del 2026-10-02, y lo mismo se
+espera en la Radeon del equipo de desarrollo. Cuál de los dos abre en el equipo mínimo no está
+verificado. wgpu 30.0.1 no tiene una opción que obligue a usar OpenGL ES.
+
+**Decisión:** `tests/gles.sh` corre las pruebas que dibujan con GL con
+`MESA_GL_VERSION_OVERRIDE=3.1`, que deja a Mesa sin OpenGL 3.3, y con
+`MESA_GLES_VERSION_OVERRIDE=3.0`, que anuncia el OpenGL ES como 3.0. Exige que todos los adaptadores
+GL hayan abierto OpenGL ES 3.0. wgpu se limita a lo que anuncia esa versión, y Mesa no quita lo que
+3.0 no trae. El 2026-10-02 dio sí en las 5 pruebas con GL. Cambia `docs/DESIGN.md`, "Dos niveles
+gráficos", en "Cómo se comprueba".
+
+**Alternativas:** Correr solo el backend GL por defecto. Se descartó porque deja sin probar el
+camino que puede tomar el equipo mínimo. Fijar en `GlBackendOptions` la versión menor de
+OpenGL ES: wgpu la ignora cuando abre OpenGL de escritorio.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la revisión de las fases 0 a 4
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta. La revisión de las fases 0 a 4 leyó fuentes nuevas, y lo que se tomó de ellas lo
+volvió a leer el agente el 2026-10-02.
+
+**Decisión:** Se registran esas fuentes. No se copió código.
+
+- Paquete publicado de wgpu-hal 30.0.1,
+  https://static.crates.io/crates/wgpu-hal/wgpu-hal-30.0.1.crate, licencia `MIT OR Apache-2.0`.
+  De `src/gles/egl.rs` se tomó el orden de los contextos, primero OpenGL 3.3 de escritorio y
+  después OpenGL ES, y que en Wayland llama a `wl_egl_window_create` de libwayland-egl. De
+  `src/gles/adapter.rs`, que la superficie GL fuera de Windows ofrece solo `Fifo`.
+- Paquete publicado de wayland-sys 0.31.11,
+  https://static.crates.io/crates/wayland-sys/wayland-sys-0.31.11.crate, licencia `MIT`. De
+  `src/egl.rs` se tomó que carga `libwayland-egl.so.1` en tiempo de ejecución y entra en pánico si
+  no la encuentra.
+- Paquete publicado de smithay-client-toolkit 0.19.2,
+  https://static.crates.io/crates/smithay-client-toolkit/smithay-client-toolkit-0.19.2.crate,
+  licencia `MIT`. De `src/shell/xdg/fallback_frame.rs` se tomó que el marco simple tiene una barra
+  de 24 píxeles con botones y no dibuja el título.
+- La documentación de `CurrentSurfaceTexture::Lost` en el paquete de wgpu 30.0.1 de la fase 0: una
+  superficie perdida se crea de nuevo con `Instance::create_surface` y después se configura.
+- Código de cage 0.1.4-4, el de bookworm,
+  https://sources.debian.org/data/main/c/cage/0.1.4-4/cage.c, licencia `MIT` según
+  https://sources.debian.org/data/main/c/cage/0.1.4-4/LICENSE. Se tomó que `main` devuelve su propio
+  código, que cambia solo cuando falla cage, y que `cleanup_primary_client` anota el código del
+  programa que corre adentro sin devolverlo.
+- Índice de paquetes de bookworm para arm64,
+  https://deb.debian.org/debian/dists/bookworm/main/binary-arm64/Packages.xz. Se tomó que
+  libwayland-egl1 1.21.0-1 existe, y que no está entre los 140 paquetes que traen libegl1,
+  libegl-mesa0, libgl1-mesa-dri y cage con sus dependencias y recomendados. Licencia del índice:
+  no verificada.
+- Mesa, "Environment Variables", https://docs.mesa3d.org/envvars.html. Se tomaron
+  `MESA_GL_VERSION_OVERRIDE` y `MESA_GLES_VERSION_OVERRIDE`, y que la segunda cambia la versión
+  anunciada sin quitar funciones. Licencia de la página: no verificada.
 
 **Estado:** `vigente`

@@ -20,6 +20,8 @@ pub const COLORES: [[u8; 4]; 6] = [
 pub const CARA_MAS_Z: usize = 4;
 /// Índice en [`COLORES`] de la cara que mira hacia +x.
 pub const CARA_MAS_X: usize = 0;
+/// Índice en [`COLORES`] de la cara que mira hacia +y.
+pub const CARA_MAS_Y: usize = 2;
 
 const FORMATO_PROFUNDIDAD: wgpu::TextureFormat = wgpu::TextureFormat::Depth32Float;
 const BYTES_POR_VERTICE: u64 = 24;

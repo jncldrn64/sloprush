@@ -67,9 +67,12 @@ Comprobado el 2026-10-02 contra `git ls-files`.
   ventana, conecta la superficie de wgpu y dibuja la escena cuadro a cuadro.
 - `tests/README.md`: cómo se corren las pruebas.
 - `tests/arranque.rs`: las pruebas de la fase 0.
-- `tests/caida.rs`: las pruebas de la fase 4, sin GPU.
+- `tests/caida.rs`: las pruebas de la fase 4: la simulación sin GPU, y la caída leída de vuelta de
+  un lienzo.
 - `tests/caida.sh`: la prueba de la fase 4 con ventana, dentro de un Xvfb.
 - `tests/cubo.rs`: las pruebas de la fase 3, que leen el lienzo de vuelta.
+- `tests/gles.sh`: las pruebas que dibujan con GL, otra vez con OpenGL ES 3.0 forzado en Mesa.
+- `tests/lienzo.rs`: la lectura de un lienzo cuyas filas llevan relleno.
 - `tests/sprite.rs`: las pruebas de la fase 2, que leen el lienzo de vuelta.
 - `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
 - `tests/ventana.sh`: la prueba de la fase 1, dentro de un Xvfb.
@@ -85,14 +88,15 @@ Comprobado el 2026-10-02 contra el código.
 | Límites del dispositivo | `Limits::downlevel_webgl2_defaults` dentro de `iniciar` | `src/gpu.rs` |
 | Detección de software | `es_por_software`, `NOMBRES_DE_SOFTWARE` | `src/gpu.rs` |
 | Opciones con ventana | `Opciones::desde_args`: `--cuadros`, `--limite-fps` | `src/ventana.rs` |
-| Modo de presentación | `AutoVsync`, o `AutoNoVsync` con `--limite-fps` | `src/ventana.rs` |
+| Modo de presentación | `Fifo`; con tope, `Immediate` o `Mailbox` si hay | `src/ventana.rs` |
+| Superficie perdida | `CurrentSurfaceTexture::Lost` en `App::cuadro` crea otra | `src/ventana.rs` |
 | Tamaño inicial de la ventana | 640 por 480, en `App::abrir` | `src/ventana.rs` |
 | Colores y tamaño del damero | `COLOR_A`, `COLOR_B`, `LADO` | `src/sprite.rs` |
 | Posición del sprite | `ubicar`, en coordenadas de recorte | `src/sprite.rs` |
-| Colores de las caras del cubo | `COLORES`, `CARA_MAS_X`, `CARA_MAS_Z` | `src/cubo.rs` |
+| Colores de las caras del cubo | `COLORES` y `CARA_MAS_X`, `_Y` y `_Z` | `src/cubo.rs` |
 | Formato de profundidad | `Depth32Float` en `FORMATO_PROFUNDIDAD` | `src/cubo.rs` |
 | Teclas y paso de la cámara | `Camara::mover`, `PASO` de 0,25 | `src/camara.rs` |
-| Campo de visión y planos | 45 grados; cerca 0,1 y lejos 100 | `src/camara.rs` |
+| Campo de visión y planos | `CAMPO_VERTICAL`, `CERCA`, `LEJOS` | `src/camara.rs` |
 | Gravedad y frecuencia | `GRAVEDAD`, `FRECUENCIA_POR_DEFECTO` de 60 Hz | `src/simulacion.rs` |
 | Integrador | Euler semiimplícito en `Simulacion::dar_paso` | `src/simulacion.rs` |
 | Altura inicial del cubo que cae | `ALTURA_INICIAL`, 2 m | `examples/caida.rs` |
@@ -101,6 +105,13 @@ Comprobado el 2026-10-02 contra el código.
 | Versión de Rust | `channel` | `rust-toolchain.toml` |
 | Linker de aarch64 | `linker` | `.cargo/config.toml` |
 | Licencias y avisos | `[graph]`, `[advisories]`, `[licenses]`, `[sources]` | `deny.toml` |
+
+Las cifras de la tabla y las de las constantes que nombra las muestra este comando:
+
+```sh
+grep -nE "const (PASO|CAMPO_VERTICAL|CERCA|LEJOS|GRAVEDAD|FRECUENCIA_POR_DEFECTO|ALTURA_INICIAL)\
+|PhysicalSize::new" src/*.rs examples/*.rs
+```
 
 ## 3. Recursos y cómo se reinicia cada uno
 
@@ -118,11 +129,12 @@ Comprobado el 2026-10-02 contra el código.
 - El lienzo: su textura vive dentro de `Lienzo`; `leer` crea un buffer de lectura que se libera
   al terminar.
 - La ventana y su superficie: las crea `App::abrir` al arrancar el bucle de eventos, y se liberan
-  en `exiting`, al terminar.
+  en `exiting`, al terminar. Una superficie perdida se crea de nuevo en `App::cuadro`, para la
+  misma ventana.
 
 ## 4. Tamaño
 
-Comprobado el 2026-10-02: 2341 líneas de Rust, contadas con
+Comprobado el 2026-10-02: 2545 líneas de Rust, contadas con
 `wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía
@@ -144,13 +156,17 @@ si eso cierra un hueco de esta lista.
   una ventana; su neofetch no mostró sesión gráfica. winit 0.30.13 abre ventanas solo por X11 o por
   Wayland, así que hace falta un servidor o un compositor. En la conversación de diseño se propuso
   cage, un compositor Wayland de una sola aplicación que bookworm trae por apt. Nunca se instaló ni
-  se probó. Lo muestra el ejemplo `ventana` corrido con cage en el equipo mínimo, con los comandos
-  de la fase 1 de `docs/ROADMAP.md`. Bloquea la fase 0.
+  se probó. Las corridas con ventana del 2026-10-02 fueron por X11, en Xvfb, así que el camino por
+  Wayland que usa cage, con winit por Wayland y wgpu por EGL sobre Wayland, no corrió nunca. Lo
+  muestra el ejemplo `ventana`, que ya existe, corrido con cage en el equipo mínimo con el primer
+  bloque de la fase 1 de `docs/ROADMAP.md`; no hace falta cerrar la fase 1 antes. Bloquea la
+  fase 0.
 - **2026-10-01: glibc de bookworm.** Sin verificar que un binario aarch64 compilado en el equipo de
-  desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. El 2026-10-02, compilado
-  en un contenedor con Ubuntu 24.04 y glibc 2.39, el ejemplo `arranque` pide como máximo
-  `GLIBC_2.34`, y bookworm trae la 2.36. Lo muestran `aarch64-linux-gnu-objdump -T` sobre el binario
-  de `target/aarch64-unknown-linux-gnu/release/examples/`, `ldd --version` en el equipo mínimo y
+  desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. El 2026-10-02, compilados
+  en un contenedor con Ubuntu 24.04 y glibc 2.39, los ejemplos `arranque`, `ventana`, `sprite`,
+  `cubo` y `caida` piden como máximo `GLIBC_2.34`, y bookworm trae la 2.36. Lo muestran
+  `aarch64-linux-gnu-objdump -T` sobre el binario de
+  `target/aarch64-unknown-linux-gnu/release/examples/`, `ldd --version` en el equipo mínimo y
   arrancar el binario ahí. Bloquea la fase 0.
 - **2026-10-01: Vulkan en el equipo de desarrollo.** Sin verificar. En el equipo de desarrollo:
   `vulkaninfo --summary`.
@@ -158,8 +174,11 @@ si eso cierra un hueco de esta lista.
   desarrollo: `xrandr`.
 - **2026-10-01: wgpu sobre Panfrost.** Sin verificar que wgpu funcione con el backend OpenGL ES
   sobre Panfrost en la Mali-G31. El README de wgpu 30.0.1 marca OpenGL ES 3.0+ en Linux como
-  "Downlevel/Best Effort Support". Lo muestra el ejemplo de la fase 0 corrido en el equipo mínimo,
-  que imprime adaptador y backend. Bloquea la fase 0.
+  "Downlevel/Best Effort Support". Tampoco se sabe si ahí abre OpenGL ES u OpenGL de escritorio: con
+  EGL, wgpu 30.0.1 pide primero OpenGL 3.3 de escritorio, y con Mesa sobre llvmpipe lo consiguió
+  (`docs/DECISIONS.md`, 2026-10-02 "El nivel base también se prueba sobre OpenGL ES"). Lo muestra el
+  ejemplo de la fase 0 corrido en el equipo mínimo: la línea `adaptador elegido` imprime el backend
+  `Gl` y, en el campo `driver`, cuál de los dos abrió. Bloquea la fase 0.
 - **2026-10-01: Licencia de Fyrox.** El manifiesto de Fyrox 1.0.1 declara MIT, y el paquete
   publicado no trae archivo de licencia. Lo muestra el archivo de licencia de su repositorio,
   https://github.com/FyroxEngine/Fyrox. Bevy, macroquad y ggez quedaron comprobados:
@@ -169,9 +188,10 @@ si eso cierra un hueco de esta lista.
   sesión, con 4 núcleos, `cargo build --release --examples` desde cero subió la memoria usada de
   709 a 2553 MiB, según `free -m` cada medio segundo. Lo muestra la misma corrida en el equipo de
   desarrollo.
-- **2026-10-01: Rapier.** Candidato para las físicas. rapier3d 0.36.0 declara Apache-2.0, del
+- **2026-10-01: Rapier.** Candidato para las colisiones. rapier3d 0.36.0 declara Apache-2.0, del
   escalón 1. Su primer release es del 2020-08-19 y el último del 2026-09-25, según la API de
   crates.io consultada el 2026-10-01, así que como dependencia directa cumple la regla 3 de
   `docs/DESIGN.md`, "Seguridad de las dependencias". Sin verificar: su árbol de dependencias
   contra las dos normas. Lo muestra `cargo deny check` con un `Cargo.lock` que lo traiga. La
-  decisión entre físicas propias o un crate sigue sin tomar.
+  gravedad usa un integrador propio, a confirmar por el autor (`docs/DECISIONS.md`, 2026-10-02 "La
+  gravedad del cubo usa un integrador propio"); para las colisiones, la decisión sigue sin tomar.

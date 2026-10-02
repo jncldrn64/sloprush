@@ -1,9 +1,11 @@
 //! Arranque de la GPU: instancia, adaptador y dispositivo de wgpu.
 //!
 //! Todo el dibujo del motor pasa por wgpu (`docs/DESIGN.md`, "Toda la salida gráfica pasa por
-//! wgpu"). El dispositivo se pide con los límites de WebGL2, los más bajos de wgpu, para que lo que
-//! corre en el nivel completo corra igual en el nivel base (`docs/DESIGN.md`, "Dos niveles
-//! gráficos").
+//! wgpu"). El dispositivo se pide con los límites de WebGL2, los más bajos de wgpu, para que
+//! ninguna cifra que use el nivel completo falte en el nivel base (`docs/DESIGN.md`, "Dos niveles
+//! gráficos"). Los límites topean cifras y nada más: lo que el nivel base no tiene por otras
+//! razones, como las `DownlevelFlags` del adaptador, lo encuentran las pruebas que dibujan también
+//! con GL.
 
 use std::fmt;
 
@@ -12,9 +14,11 @@ use crate::registro;
 /// Qué backends se le piden a wgpu.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Eleccion {
-    /// Los que wgpu encuentre; en Linux, Vulkan y OpenGL ES.
+    /// Los que wgpu encuentre; en Linux, Vulkan y la familia OpenGL.
     Todos,
-    /// Solo OpenGL ES, del nivel base.
+    /// Solo el backend GL de wgpu, del nivel base. Con EGL, wgpu 30.0.1 pide OpenGL 3.3 de
+    /// escritorio si el driver lo ofrece y OpenGL ES 3 si no; cuál tocó lo dice el campo
+    /// `driver` del registro.
     Gl,
     /// Solo Vulkan, del nivel completo.
     Vulkan,
@@ -123,7 +127,7 @@ impl Gpu {
 }
 
 /// Crea la instancia de wgpu. Con ventana, `pantalla` es la conexión con el sistema de ventanas,
-/// que OpenGL ES necesita para presentar; sin ventana, `None`.
+/// que el backend GL necesita para presentar; sin ventana, `None`.
 pub fn crear_instancia(
     eleccion: Eleccion,
     pantalla: Option<Box<dyn wgpu::wgt::WgpuHasDisplayHandle>>,

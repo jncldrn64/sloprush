@@ -71,14 +71,16 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
   permisivas, sin autorización; 2, implementar desde cero; 3, copyleft débil, con autorización del
   autor; 4, GPL-3.0 y AGPL-3.0, con autorización y después del 3. Fuente: 2026-10-01 "Escalera de
   licencias para las dependencias".
-- **modo de cuadros fijos**: la corrida de un ejemplo con `--cuadros N`, que dibuja N cuadros y
-  termina con código 0. Da sí o no sin mirar la pantalla. Fuente: CHANGELOG, v0.2.
 - **lienzo**: una textura fuera de pantalla donde se dibuja un cuadro para leer sus píxeles de
-  vuelta. Es como prueban las fases 2 y 3 lo que se dibuja. Fuente: 2026-10-02 "Las pruebas de
+  vuelta. Es como prueban las fases 2 a 4 lo que se dibuja. Fuente: 2026-10-02 "Las pruebas de
   dibujo leen un lienzo fuera de pantalla".
 - **mínimo viable**: una ventana, un sprite 2D, un cubo 3D con cámara, entrada de teclado y gravedad
-  sobre el cubo, y nada más. Todavía no existe. Fuente: 2026-10-01 "Alcance del mínimo viable, con
-  su motivo".
+  sobre el cubo, y nada más. Hoy está en el código, con sus fases en `lista para verificación`, y
+  sin cerrar hasta que el autor corra los ejemplos en los dos equipos. Fuente: 2026-10-01 "Alcance
+  del mínimo viable, con su motivo".
+- **modo de cuadros fijos**: la corrida de un ejemplo con `--cuadros N`, que dibuja N cuadros y
+  termina con código 0. Da sí o no sin mirar la pantalla. Fuente: 2026-10-02 "Las pruebas de dibujo
+  leen un lienzo fuera de pantalla".
 - **nativo**: lo que toca GPU, sistema operativo o hardware, o corre en cada cuadro sobre muchos
   objetos, más lo que pasó de script a nativo con una medición registrada. Fuente: 2026-10-01
   "Nativo contra script, con su motivo".
