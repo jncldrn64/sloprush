@@ -277,7 +277,7 @@ tiene que dar 0, y `cubo.log` tiene que traer las líneas `[resultado] cámara e
 
 ## Fase 4: Gravedad sobre el cubo
 
-**Estado:** `pendiente`
+**Estado:** `lista para verificación`
 
 **Objetivo:** que el cubo caiga con gravedad, con la simulación a paso fijo de 60 Hz por defecto.
 
@@ -294,8 +294,40 @@ menos de 2 % de 4,905 m.
 
 **Bloquea:** nada.
 
-**Bloqueada por:** fase 3, y la decisión entre físicas propias o delegadas a un crate, sin tomar
-(`docs/DESIGN.md`, "Sin escribir todavía").
+**Bloqueada por:** fase 3. La gravedad usa un integrador propio (`docs/DECISIONS.md`, 2026-10-02
+"La gravedad del cubo usa un integrador propio").
+
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe. `cargo test --test
+caida` simuló la caída sin GPU con cuadros de 1/30 s, de 1/240 s y de largos irregulares: los tres
+dieron la misma bajada, bit a bit, y a 60 Hz se aleja 1,67 % de 4,905 m. Sin el tope de pasos, la
+prueba falla.
+
+Dentro de un Xvfb, `tests/caida.sh` corrió el ejemplo con tope de 30 y de 240 cuadros por segundo,
+en GL y en Vulkan. Las cuatro corridas imprimieron `bajó 4.986750 m en 60 pasos` y salieron con
+código 0.
+
+**Para cerrarla, en el equipo de desarrollo:**
+
+```sh
+cargo test --test caida
+cargo run --release --example caida -- --backend vulkan --limite-fps 30
+cargo run --release --example caida -- --backend vulkan --limite-fps 240
+cargo run --release --example caida -- --backend gl --limite-fps 240
+```
+
+Las tres corridas tienen que imprimir la misma línea `[resultado] bajó` y terminar con `echo $?` en
+0. A la vista, el cubo cae y la ventana se cierra sola tras 1 s simulado.
+
+**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, cambiando
+`ventana` por `caida`:
+
+```sh
+cage -- ./caida --backend gl --limite-fps 30 > caida-30.log; echo $?
+cage -- ./caida --backend gl --limite-fps 240 > caida-240.log; echo $?
+grep bajó caida-30.log caida-240.log
+```
+
+Las dos líneas de `grep` tienen que traer la misma cifra, y la misma que en el equipo de desarrollo.
 
 ## Backlog
 

@@ -10,6 +10,7 @@ pub mod gpu;
 pub mod lienzo;
 pub mod matematica;
 pub mod registro;
+pub mod simulacion;
 pub mod sprite;
 pub mod ventana;
 

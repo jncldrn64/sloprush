@@ -928,3 +928,34 @@ consultada, y sus pruebas en `src/matematica.rs` comprueban los planos cercano y
 posición del ojo.
 
 **Estado:** `vigente`
+
+## 2026-10-02: La gravedad del cubo usa un integrador propio
+
+**Contexto:** La decisión entre físicas propias o delegadas a un crate seguía abierta en
+`docs/DESIGN.md`, "Sin escribir todavía", y bloqueaba la fase 4. El pedido de la sesión del
+2026-10-02 la autorizó, con la marca de que el autor la confirme.
+
+**Decisión:** La fase 4 integra la gravedad con un integrador propio, Euler semiimplícito, en
+`src/simulacion.rs`: primero la velocidad y después la posición con la velocidad nueva. La decisión
+entre físicas propias o un crate sigue abierta para cuando haga falta detectar colisiones. La fase
+4 ya no está bloqueada por ella. Queda a confirmar por el autor.
+
+**Alternativas:** Rapier, el candidato del hueco "Rapier" de `docs/ARCHITECTURE.md`. Para una caída
+sin colisiones no hacía falta. Euler explícito, que con 60 pasos se aleja lo mismo de 4,905 m pero
+hacia el otro lado; el semiimplícito conserva mejor la energía en movimientos que oscilan.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La caída se cuenta en pasos y no en tiempo de reloj
+
+**Contexto:** El criterio de la fase 4 pide la misma cifra con el dibujo a 30 y a 240 cuadros por
+segundo. Si la caída terminara cuando pasa 1 s de reloj, un cuadro largo podría sumar un paso de
+más.
+
+**Decisión:** `Simulacion::avanzar` recibe un tope de pasos, y el ejemplo `caida` termina al cumplir
+tantos pasos como la frecuencia, 1 s simulado. El tiempo de reloj solo decide cuándo se da cada
+paso. Así la bajada depende de la cantidad de pasos y no de cómo se repartieron entre los cuadros.
+
+**Alternativas:** Terminar a 1 s de reloj. Se descartó por el paso de más.
+
+**Estado:** `vigente`

@@ -32,3 +32,11 @@ dice cuál.
   traslación, el paso de cada tecla y la malla del cubo.
 - `tests/cubo.rs`: dibuja el cubo con GL y con Vulkan desde varias posiciones de cámara y comprueba
   qué cara se ve y dónde. Sale del criterio de aceptación de la fase 3.
+- Pruebas unitarias de `src/simulacion.rs`: un paso, los pasos que caben en un tiempo, el tope y
+  la opción `--hz`.
+- `tests/caida.rs`: simula la caída sin GPU con cuadros de 1/30 s, de 1/240 s y de largos
+  irregulares, y comprueba la igualdad bit a bit y el desvío de 1/n. Sale del criterio de
+  aceptación de la fase 4.
+- `tests/caida.sh`: corre el ejemplo `caida` en un Xvfb con tope de 30 y de 240 cuadros por
+  segundo. Sin argumento corre GL y Vulkan, y exige la misma bajada en las cuatro corridas. Pide
+  Xvfb y no corre con `cargo test`.

@@ -64,9 +64,9 @@ wgpu".
   MoltenVK (sección 11).
 
 **Cómo se comprueba:** se corre la misma escena con la misma entrada en cada nivel y se compara
-el resultado. `cargo test` corre las pruebas de arranque y de dibujo con GL y con Vulkan, y las
-dos dieron sí el 2026-10-02 sobre llvmpipe. Comparar el estado de juego entre niveles queda en la
-sección 11.
+el resultado. `cargo test` corre las pruebas de arranque y de dibujo con GL y con Vulkan, y
+`tests/caida.sh`, sin argumento, compara el estado de juego entre los dos niveles: lo que baja el
+cubo tiene que ser la misma cifra. Las dos dieron sí el 2026-10-02 sobre llvmpipe.
 
 ## 4. La simulación avanza a paso fijo de frecuencia configurable
 
@@ -88,7 +88,8 @@ simulación. La prueba pide dos cosas:
 
 Con n pasos por segundo, un integrador de Euler se aleja de 4,905 m en una fracción 1/n, que a
 60 Hz es 1,67 %. El comando de abajo da 4,98675 m con Euler semiimplícito y 4,82325 m con Euler
-explícito. La prueba no existe todavía, y es el criterio de la fase 4 de `docs/ROADMAP.md`.
+explícito. `cargo test --test caida` comprueba las dos cosas sin GPU, y `tests/caida.sh` comprueba
+la igualdad con la ventana, en GL y en Vulkan. Las dos dieron sí el 2026-10-02 sobre llvmpipe.
 
 ```sh
 python3 -c "g,h,n=9.81,1/60,60; print(g*h*h*n*(n+1)/2, g*h*h*n*(n-1)/2)"
@@ -226,13 +227,14 @@ El motor todavía no tiene interfaz, así que no hay reglas de iconos ni colores
 
 ## 11. Sin escribir todavía
 
-- **Físicas propias o delegadas a un crate.** Sin decidir. Rapier se nombró como candidato; su
-  estado está en `docs/ARCHITECTURE.md`, hueco "Rapier". La fase 4 lo necesita.
+- **Físicas propias o delegadas a un crate para detectar colisiones.** Sin decidir. La gravedad de
+  la fase 4 usa un integrador propio (`docs/DECISIONS.md`, 2026-10-02 "La gravedad del cubo usa
+  un integrador propio"). Rapier se nombró como candidato; su estado está en
+  `docs/ARCHITECTURE.md`, hueco "Rapier".
 - **El umbral de "muchos objetos" del principio 5**, y el lenguaje de script.
 - **El nivel base en macOS.** La tabla de wgpu 30.0.1 no marca ningún backend de macOS como
   "Downlevel/Best Effort": OpenGL ahí necesita ANGLE. Falta decidir si ese camino cuenta como nivel
   base.
-- **El comando que comprueba el principio 3** comparando el estado de juego entre los dos niveles.
 - **El idioma de los identificadores del código.**
 - **Cómo se escriben los tests.**
 - **Dónde imprime el registro y con qué formato.**

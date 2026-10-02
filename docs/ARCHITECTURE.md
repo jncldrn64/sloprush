@@ -35,6 +35,8 @@ Comprobado el 2026-10-02 contra `git ls-files`.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
 - `examples/arranque.rs`: el ejemplo de la fase 0. Arranca la GPU, imprime los adaptadores, el
   elegido y su backend, y cierra.
+- `examples/caida.rs`: el ejemplo de la fase 4. El cubo cae; tras 1 s simulado imprime cuánto
+  bajó y termina.
 - `examples/cubo.rs`: el ejemplo de la fase 3. Dibuja el cubo; el teclado mueve la cámara.
 - `examples/sprite.rs`: el ejemplo de la fase 2. Dibuja el sprite en el centro de la ventana.
 - `examples/ventana.rs`: el ejemplo de la fase 1. Abre una ventana, la limpia en cada cuadro e
@@ -49,13 +51,15 @@ Comprobado el 2026-10-02 contra `git ls-files`.
 - `src/gpu.rs`: el arranque de wgpu. `crear_instancia`, `listar_adaptadores`, `iniciar` y
   `es_por_software`, y la elección de backend, `Eleccion` y `separar_backend`.
 - `src/lib.rs`: la raíz del crate. Expone los módulos `camara`, `cubo`, `dibujo`, `gpu`, `lienzo`,
-  `matematica`, `registro`, `sprite` y `ventana`, más `wgpu`, `winit` y `VERSION`.
+  `matematica`, `registro`, `simulacion`, `sprite` y `ventana`, más `wgpu`, `winit` y `VERSION`.
 - `src/lienzo.rs`: `Lienzo`, una textura fuera de pantalla que `leer` copia a memoria, y las
   funciones `pixel` y `parecido` para las pruebas.
 - `src/matematica.rs`: vectores y matrices de 4 por 4: `perspectiva`, `mirar`, `trasladar` y
   `multiplicar`.
 - `src/registro.rs`: `arranque`, `carga`, `cierre`, `entrada`, `advertencia`, `resultado` y
   `error`.
+- `src/simulacion.rs`: `Simulacion`, a paso fijo de frecuencia configurable, con `dar_paso`,
+  `avanzar` con tope de pasos y `separar_frecuencia` para `--hz`.
 - `src/sprite.rs`: `Sprite`, que carga el sombreador, la textura de damero y el pipeline, y
   `ubicar` y `dibujar`.
 - `src/sprite.wgsl`: el sombreador del sprite, en WGSL.
@@ -63,6 +67,8 @@ Comprobado el 2026-10-02 contra `git ls-files`.
   ventana, conecta la superficie de wgpu y dibuja la escena cuadro a cuadro.
 - `tests/README.md`: cómo se corren las pruebas.
 - `tests/arranque.rs`: las pruebas de la fase 0.
+- `tests/caida.rs`: las pruebas de la fase 4, sin GPU.
+- `tests/caida.sh`: la prueba de la fase 4 con ventana, dentro de un Xvfb.
 - `tests/cubo.rs`: las pruebas de la fase 3, que leen el lienzo de vuelta.
 - `tests/sprite.rs`: las pruebas de la fase 2, que leen el lienzo de vuelta.
 - `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
@@ -87,6 +93,9 @@ Comprobado el 2026-10-02 contra el código.
 | Formato de profundidad | `Depth32Float` en `FORMATO_PROFUNDIDAD` | `src/cubo.rs` |
 | Teclas y paso de la cámara | `Camara::mover`, `PASO` de 0,25 | `src/camara.rs` |
 | Campo de visión y planos | 45 grados; cerca 0,1 y lejos 100 | `src/camara.rs` |
+| Gravedad y frecuencia | `GRAVEDAD`, `FRECUENCIA_POR_DEFECTO` de 60 Hz | `src/simulacion.rs` |
+| Integrador | Euler semiimplícito en `Simulacion::dar_paso` | `src/simulacion.rs` |
+| Altura inicial del cubo que cae | `ALTURA_INICIAL`, 2 m | `examples/caida.rs` |
 | Alineación de la lectura | `COPY_BYTES_PER_ROW_ALIGNMENT`, en `Lienzo::leer` | `src/lienzo.rs` |
 | Formato del registro | `[etapa] mensaje` en stdout; `[error]` en stderr | `src/registro.rs` |
 | Versión de Rust | `channel` | `rust-toolchain.toml` |
@@ -113,7 +122,7 @@ Comprobado el 2026-10-02 contra el código.
 
 ## 4. Tamaño
 
-Comprobado el 2026-10-02: 2007 líneas de Rust, contadas con
+Comprobado el 2026-10-02: 2341 líneas de Rust, contadas con
 `wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía
@@ -156,8 +165,10 @@ si eso cierra un hueco de esta lista.
   https://github.com/FyroxEngine/Fyrox. Bevy, macroquad y ggez quedaron comprobados:
   `docs/DECISIONS.md`, 2026-10-01 "Fuentes consultadas en la siembra".
 - **2026-10-01: Memoria al compilar.** El equipo de desarrollo mostraba 13649 MiB ocupados de
-  15945, y compilar puede agotarla. Sin medir. Lo muestra `free -m` antes y durante la primera
-  compilación completa.
+  15945, y compilar puede agotarla. Sin medir en ese equipo. El 2026-10-02, en el contenedor de la
+  sesión, con 4 núcleos, `cargo build --release --examples` desde cero subió la memoria usada de
+  709 a 2553 MiB, según `free -m` cada medio segundo. Lo muestra la misma corrida en el equipo de
+  desarrollo.
 - **2026-10-01: Rapier.** Candidato para las físicas. rapier3d 0.36.0 declara Apache-2.0, del
   escalón 1. Su primer release es del 2020-08-19 y el último del 2026-09-25, según la API de
   crates.io consultada el 2026-10-01, así que como dependencia directa cumple la regla 3 de

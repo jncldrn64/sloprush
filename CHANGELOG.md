@@ -22,8 +22,13 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
   en un lienzo fuera de pantalla y lee los píxeles de vuelta en GL y en Vulkan.
 - Fase 3: matemática propia, la cámara movida por teclado, el cubo con búfer de profundidad, el
   ejemplo `cubo` y `tests/cubo.rs`, que comprueba caras y movimiento leyendo el lienzo.
+- Fase 4: la simulación a paso fijo de frecuencia configurable con integrador propio, el ejemplo
+  `caida`, `tests/caida.rs` sin GPU y `tests/caida.sh` con ventana. Con tope de 30 y de 240
+  cuadros por segundo, el cubo baja 4,986750 m en 60 pasos.
 
 ### Changed
+- La fase 4 ya no espera la decisión entre físicas propias o un crate: la gravedad usa un
+  integrador propio, y la decisión queda para las colisiones.
 - `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
   prosa, y sus líneas base se midieron de nuevo.
 
