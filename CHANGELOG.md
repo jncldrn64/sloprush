@@ -5,6 +5,46 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.2 — 2026-10-02
+
+Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
+
+### Added
+- Fase 0: el proyecto Cargo `sloprush` con Rust 1.97.0 fijado, wgpu 30.0.1 y pollster 1.0.1 a
+  versión exacta, y su `Cargo.lock`.
+- Fase 0: el ejemplo `arranque`, que imprime los adaptadores, el elegido y su backend, y advierte
+  si dibuja por software.
+- Fase 0: `deny.toml`, los hooks de git de `.githooks/` y el linker para compilar hacia aarch64.
+- Fase 1: winit 0.30.13 a versión exacta, y el ejemplo `ventana`, que abre una ventana, imprime cada
+  tecla y termina con código 0 al cerrarla o tras `--cuadros N`.
+- Fase 1: `tests/ventana.sh`, que prueba la ventana dentro de un Xvfb sin mirar la pantalla.
+- Fase 2: el sprite 2D con textura de damero, el ejemplo `sprite` y `tests/sprite.rs`, que dibuja
+  en un lienzo fuera de pantalla y lee los píxeles de vuelta en GL y en Vulkan. `tests/lienzo.rs`
+  lee un lienzo cuyas filas llevan relleno.
+- Fase 3: matemática propia, a confirmar por el autor, la cámara movida por teclado, el cubo con
+  búfer de profundidad, el ejemplo `cubo` y `tests/cubo.rs`, que comprueba caras y movimiento
+  leyendo el lienzo.
+- Fase 4: la simulación a paso fijo de frecuencia configurable con integrador propio, el ejemplo
+  `caida`, `tests/caida.rs` y `tests/caida.sh` con ventana. Con tope de 30 y de 240 cuadros por
+  segundo, el cubo baja 4,986750 m en 60 pasos.
+- `tests/gles.sh`, que corre las pruebas con GL sobre OpenGL ES 3.0 forzado en Mesa, porque con
+  Mesa el backend GL de wgpu abre OpenGL de escritorio.
+
+### Changed
+- La fase 4 ya no espera la decisión entre físicas propias o un crate: la gravedad usa un
+  integrador propio, a confirmar por el autor, y la decisión queda para las colisiones.
+- `docs/DESIGN.md`, "Licencias de las dependencias": la matemática del motor se escribe en el
+  motor, a confirmar por el autor.
+- `docs/DESIGN.md`, "Licencias de las dependencias" y "Seguridad de las dependencias": cargo-deny
+  revisa el árbol de los objetivos x86_64 y aarch64 de Linux.
+- `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
+  prosa, y sus líneas base se midieron de nuevo.
+
+### Removed
+- El hueco "Licencias del árbol de wgpu": `cargo deny check` pasó con el árbol de la fase 0.
+- El hueco "Qué pide la biblioteca de ventanas": en Linux, winit 0.30.13 abre ventanas por X11 o
+  por Wayland.
+
 ## v0.1 — 2026-10-01
 
 Solo documentación. Corrige y completa la siembra del mismo día con los motivos de las decisiones y

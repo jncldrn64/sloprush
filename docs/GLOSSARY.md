@@ -14,6 +14,10 @@ suficientes términos para que el orden alfabético solo ya no alcance.
 Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la plantilla 1.0".
 
 - **borrador**: el estado en que se abre un PR. El autor lo marca listo y lo mergea.
+- **cita textual**: palabras del autor copiadas tal cual, en una viñeta propia que abre con
+  comillas o con su etiqueta, como `**A13.**`. No se reescribe ni se resume, y no cuenta para las
+  reglas 1 y 2 de prosa. Fuente: 2026-10-02 "Las citas textuales del autor no cuentan para las
+  reglas 1 y 2".
 - **contexto temporal**: lo que se observó y se perdería si nadie lo escribe, antes de saber si se
   quiere. Vive en `docs/TEMPORARY-CONTEXT.md`, y cada línea se coloca o se descarta.
 - **decisión**: una entrada de `docs/DECISIONS.md` que dice por qué algo es como es. No se edita
@@ -52,6 +56,8 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
 - **bloque**: la palabra del autor en A1 de `docs/REQUIREMENTS.md`. Todavía no tiene definición:
   sale del catálogo de bloques. Fuente: 2026-10-01 "Primero el mínimo viable, después el catálogo
   de bloques, con su motivo".
+- **cámara**: el punto desde donde se ve la escena 3D, con su dirección. Hoy se traslada con el
+  teclado sin girar. Fuente: 2026-10-02 "La cámara se traslada sin girar".
 - **catálogo de bloques**: la lista de bloques que se extrae de lo construido en el mínimo viable y
   que congela el autor. Todavía no existe. Fuente: la misma entrada que **bloque**.
 - **congelar**: fijar una API por escrito, cosa que solo hace el autor. Antes de eso la API es
@@ -65,9 +71,16 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
   permisivas, sin autorización; 2, implementar desde cero; 3, copyleft débil, con autorización del
   autor; 4, GPL-3.0 y AGPL-3.0, con autorización y después del 3. Fuente: 2026-10-01 "Escalera de
   licencias para las dependencias".
+- **lienzo**: una textura fuera de pantalla donde se dibuja un cuadro para leer sus píxeles de
+  vuelta. Es como prueban las fases 2 a 4 lo que se dibuja. Fuente: 2026-10-02 "Las pruebas de
+  dibujo leen un lienzo fuera de pantalla".
 - **mínimo viable**: una ventana, un sprite 2D, un cubo 3D con cámara, entrada de teclado y gravedad
-  sobre el cubo, y nada más. Todavía no existe. Fuente: 2026-10-01 "Alcance del mínimo viable, con
-  su motivo".
+  sobre el cubo, y nada más. Hoy está en el código, con sus fases en `lista para verificación`, y
+  sin cerrar hasta que el autor corra los ejemplos en los dos equipos. Fuente: 2026-10-01 "Alcance
+  del mínimo viable, con su motivo".
+- **modo de cuadros fijos**: la corrida de un ejemplo con `--cuadros N`, que dibuja N cuadros y
+  termina con código 0. Da sí o no sin mirar la pantalla. Fuente: 2026-10-02 "Las pruebas de dibujo
+  leen un lienzo fuera de pantalla".
 - **nativo**: lo que toca GPU, sistema operativo o hardware, o corre en cada cuadro sobre muchos
   objetos, más lo que pasó de script a nativo con una medición registrada. Fuente: 2026-10-01
   "Nativo contra script, con su motivo".
@@ -86,3 +99,5 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
 - **script**: una función documentada que extiende el motor sin ser nativa, al estilo MTA de A11 en
   `docs/REQUIREMENTS.md`. Todavía no existe, y su lenguaje no está elegido. Fuente: 2026-10-01
   "Nativo contra script, con su motivo".
+- **sprite**: un rectángulo 2D con una textura. Hoy, el damero de `src/sprite.rs`. Fuente:
+  2026-10-02 "La textura del sprite se arma en el código".

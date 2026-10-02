@@ -1,0 +1,27 @@
+# Configuración de cargo-deny. Las reglas que comprueba están en docs/DESIGN.md, "Licencias de las
+# dependencias" y "Seguridad de las dependencias".
+
+[graph]
+# Hoy el motor se comprueba solo en Linux (docs/REQUIREMENTS.md, sección 4). Una plataforma nueva
+# del Backlog suma su objetivo acá.
+targets = ["x86_64-unknown-linux-gnu", "aarch64-unknown-linux-gnu"]
+
+[advisories]
+# Vulnerabilidades: siempre error. Sin mantenimiento: "all" es el valor por defecto.
+yanked = "deny"
+# Un aviso no se silencia sin decisión del autor (docs/DESIGN.md, "Seguridad de las dependencias").
+ignore = []
+
+[licenses]
+# Escalón 1 de docs/DESIGN.md, "Licencias de las dependencias".
+allow = ["MIT", "Apache-2.0", "BSD-2-Clause", "BSD-3-Clause", "Zlib", "ISC", "Unicode-3.0"]
+# Cada excepción de los escalones 3 y 4 va acá, una por crate, con su entrada en docs/DECISIONS.md.
+exceptions = []
+
+[licenses.private]
+# El crate del motor no se publica; su licencia es el LICENSE del repo.
+ignore = true
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"

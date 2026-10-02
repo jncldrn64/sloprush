@@ -9,8 +9,8 @@
 Un cambio que rompe un principio de acá se rechaza, lo haya escrito una persona o un modelo. Ante la
 duda, se copia la forma del código que ya existe en vez de inventar un idioma nuevo.
 
-Hoy no hay código. Cada principio dice cómo se comprobará, y lo que todavía no se puede comprobar
-está en la sección 11.
+Cada principio dice cómo se comprueba, y lo que todavía no se puede comprobar está en la sección 11.
+Qué código existe está en `docs/ARCHITECTURE.md`.
 
 ## 1. Rust estable
 
@@ -24,8 +24,8 @@ su motivo".
 **Dónde está escrito:** los canales stable, beta y nightly están en la documentación de rustup,
 https://rust-lang.github.io/rustup/concepts/channels.html, consultada el 2026-10-01.
 
-**Cómo se comprueba:** sin comando todavía. No hay proyecto Cargo, y fijar el toolchain es
-alcance de la fase 0 de `docs/ROADMAP.md`.
+**Cómo se comprueba:** `rust-toolchain.toml` fija `channel = "1.97.0"`, y dentro del repo
+`rustc --version` da 1.97.0. Corrido el 2026-10-02 en el contenedor de la sesión.
 
 ## 2. Toda la salida gráfica pasa por wgpu
 
@@ -39,7 +39,9 @@ el navegador y en la GPU del equipo mínimo su driver libre no es conformante. D
 **Dónde está escrito:** la tabla "Supported Platforms" del README de wgpu 30.0.1,
 https://docs.rs/crate/wgpu/30.0.1/source/README.md, consultada el 2026-10-01.
 
-**Cómo se comprueba:** sin comando todavía (sección 11).
+**Cómo se comprueba:** `cargo tree -e normal --depth 1` lista las dependencias directas, y ninguna
+puede ser una API gráfica como `ash`, `glow`, `khronos-egl`, `metal` o `windows`. Corrido el
+2026-10-02: lista pollster, wgpu y winit.
 
 ## 3. Dos niveles gráficos
 
@@ -61,8 +63,13 @@ wgpu".
 - sin marca de nivel: OpenGL en macOS, que necesita la capa ANGLE, y Vulkan en macOS, que necesita
   MoltenVK (sección 11).
 
-**Cómo se comprueba:** se corre el mismo ejemplo con la misma entrada en cada nivel y se compara
-el estado de juego. El comando no existe todavía (sección 11).
+**Cómo se comprueba:** se corre la misma escena con la misma entrada en cada nivel y se compara
+el resultado. `cargo test` corre las pruebas de arranque y de dibujo con GL y con Vulkan, y
+`tests/caida.sh`, sin argumento, compara el estado de juego entre los dos niveles: lo que baja el
+cubo tiene que ser la misma cifra. Con Mesa, el backend GL de wgpu 30.0.1 abre OpenGL de
+escritorio, así que `tests/gles.sh` corre las pruebas con GL otra vez sobre OpenGL ES 3.0
+(`docs/DECISIONS.md`, 2026-10-02 "El nivel base también se prueba sobre OpenGL ES"). Las tres
+dieron sí el 2026-10-02 sobre llvmpipe.
 
 ## 4. La simulación avanza a paso fijo de frecuencia configurable
 
@@ -82,9 +89,13 @@ simulación. La prueba pide dos cosas:
 - con el dibujo limitado a 30 y a 240 cuadros por segundo, lo que baja es exactamente igual;
 - a 60 Hz, lo que baja se aleja menos de 2 % de 4,905 m, la caída de la fórmula continua.
 
-Con n pasos por segundo, un integrador de Euler se aleja de 4,905 m en una fracción 1/n, que a
-60 Hz es 1,67 %. El comando de abajo da 4,98675 m con Euler semiimplícito y 4,82325 m con Euler
-explícito. La prueba no existe todavía, y es el criterio de la fase 4 de `docs/ROADMAP.md`.
+Con n pasos por segundo, un integrador de Euler se aleja de 4,905 m en una fracción 1/n, que a 60 Hz
+es 1,67 %. El comando de abajo da 4,98675 m con Euler semiimplícito y 4,82325 m con Euler explícito.
+`cargo test --test caida` comprueba las dos cosas sin GPU, y `tests/caida.sh` comprueba la igualdad
+con la ventana, en GL y en Vulkan. La misma suite comprueba además que 2 s de tiempo real den los
+mismos pasos con cuadros de 1/30 s y de 1/240 s, con un paso de diferencia como mucho, porque los
+cuadros, redondeados a nanosegundos, no suman justo 2 s. Las dos dieron sí el 2026-10-02 sobre
+llvmpipe.
 
 ```sh
 python3 -c "g,h,n=9.81,1/60,60; print(g*h*h*n*(n+1)/2, g*h*h*n*(n-1)/2)"
@@ -120,6 +131,10 @@ Nunca entran GPL-2.0 sin la cláusula "o posterior", código sin licencia, licen
 licencias no comerciales. Para bajar del escalón 2, el agente se detiene y presenta al autor lo que
 `CLAUDE.md`, sección 8, pide cuando un umbral se dispara.
 
+La matemática del motor, la de la cámara y el cubo, se escribe en el motor aunque haya un crate del
+escalón 1 que la traiga (`docs/DECISIONS.md`, 2026-10-02 "La matemática del cubo y la cámara se
+escribe en el motor"). Queda a confirmar por el autor.
+
 **Por qué:** el criterio es del autor, que quiere licencias parecidas a la MIT y deja las demás como
 última opción. La escalera fue propuesta de la conversación de diseño, aceptada por el autor.
 Decisión: `docs/DECISIONS.md`, 2026-10-01 "Escalera de licencias para las dependencias".
@@ -130,8 +145,10 @@ https://opensource.org/license/unicode-3-0, consultada el 2026-10-01. Las listas
 https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html, consultada el 2026-10-01.
 
 **Cómo se comprueba:** `cargo deny check licenses`, con el escalón 1 en `allow` y cada excepción
-de los escalones 3 y 4 en `exceptions`, una por crate y con su entrada en `docs/DECISIONS.md`. Sin
-correr: no hay dependencias, y la herramienta entra en la fase 0.
+de los escalones 3 y 4 en `exceptions`, una por crate y con su entrada en `docs/DECISIONS.md`. El
+árbol que revisa es el de los objetivos `x86_64-unknown-linux-gnu` y `aarch64-unknown-linux-gnu`
+(`docs/DECISIONS.md`, 2026-10-02 "cargo-deny revisa los dos objetivos Linux"). Corrido el
+2026-10-02, con `exceptions` vacío: `licenses ok`.
 
 ## 7. Versión exacta de cada dependencia
 
@@ -147,15 +164,20 @@ https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html, consulta
 Ahí `"1.2.3"` sin operador equivale a `^1.2.3`, que admite versiones compatibles, y `= 1.2.3` es la
 versión exacta.
 
-**Cómo se comprueba:** `git ls-files Cargo.lock` tiene que listarlo. Sin correr: no hay proyecto
-Cargo todavía.
+**Cómo se comprueba:** `git ls-files Cargo.lock` tiene que listarlo, y este comando no tiene que
+imprimir nada, porque muestra cada dependencia sin `=`. Corridos los dos el 2026-10-02.
+
+```sh
+awk '/^\[dependencies\]/{d=1;next} /^\[/{d=0} d && /=/ && !/"=/' Cargo.toml
+```
 
 ## 8. Seguridad de las dependencias
 
 **Regla:**
 
 1. Cero avisos en todo el árbol: vulnerabilidades, crates declarados sin mantenimiento y versiones
-   retiradas.
+   retiradas. El árbol es el de los objetivos Linux que se compilan (`docs/DECISIONS.md`,
+   2026-10-02 "cargo-deny revisa los dos objetivos Linux").
 2. Solo crates del registro crates.io, nunca desde un repositorio git.
 3. Cada dependencia directa tiene su primer release hace 1 año o más, y su último release dentro de
    los últimos 12 meses.
@@ -188,13 +210,14 @@ v = json.load(sys.stdin)["versions"]
 print(min(x["created_at"] for x in v)[:10], max(x["created_at"] for x in v)[:10])'
 ```
 
-Las reglas 1, 2 y 4 están sin correr: no hay `Cargo.lock`, y la herramienta entra en la fase 0.
+Corridas el 2026-10-02 sobre el `Cargo.lock` de la fase 0: `cargo deny check` dio `advisories ok`
+y `sources ok`, con `ignore` vacío, y la regla 3 dio 2020-04-07 y 2026-07-10 para pollster.
 
 ## 9. Los tests
 
-Todavía no hay tests, y cómo se escriben está en la sección 11. Una suite que alguna vez falló de
-forma intermitente se corre N veces, no una, y se queda en esa lista después del arreglo. Cómo se
-corren está en `tests/README.md`.
+Cómo se escriben los tests está en la sección 11. Una suite que alguna vez falló de forma
+intermitente se corre N veces, no una, y se queda en esa lista después del arreglo. Qué suites hay
+y cómo se corren está en `tests/README.md`.
 
 ## 10. Presentación y registro
 
@@ -210,19 +233,21 @@ Propuesta de la conversación de diseño, aceptada por el autor. Decisión: `doc
 **Dónde está escrito:** llvmpipe es el rasterizador por software de Mesa,
 https://docs.mesa3d.org/drivers/llvmpipe.html, consultada el 2026-10-01.
 
-**Cómo se comprueba:** el ejemplo de la fase 0 de `docs/ROADMAP.md` imprime esas líneas. No existe
-todavía.
+**Cómo se comprueba:** el ejemplo `arranque` de la fase 0 imprime esas líneas. Corrido el
+2026-10-02 sobre llvmpipe, con Vulkan y con GL: las dos veces imprimió la advertencia.
 
 El motor todavía no tiene interfaz, así que no hay reglas de iconos ni colores.
 
 ## 11. Sin escribir todavía
 
-- **Físicas propias o delegadas a un crate.** Sin decidir. Rapier se nombró como candidato; su
-  estado está en `docs/ARCHITECTURE.md`, hueco "Rapier". La fase 4 lo necesita.
+- **Físicas propias o delegadas a un crate para detectar colisiones.** Sin decidir. La gravedad de
+  la fase 4 usa un integrador propio, a confirmar por el autor (`docs/DECISIONS.md`, 2026-10-02
+  "La gravedad del cubo usa un integrador propio"). Rapier se nombró como candidato; su estado
+  está en `docs/ARCHITECTURE.md`, hueco "Rapier".
 - **El umbral de "muchos objetos" del principio 5**, y el lenguaje de script.
 - **El nivel base en macOS.** La tabla de wgpu 30.0.1 no marca ningún backend de macOS como
   "Downlevel/Best Effort": OpenGL ahí necesita ANGLE. Falta decidir si ese camino cuenta como nivel
   base.
-- **Los comandos que comprueban los principios 2 y 3.**
+- **El idioma de los identificadores del código.**
 - **Cómo se escriben los tests.**
 - **Dónde imprime el registro y con qué formato.**

@@ -702,3 +702,350 @@ código, y de ninguna se leyó código.
   crates sin mantenimiento ni las versiones retiradas.
 
 **Estado:** `vigente`
+
+## 2026-10-02: Entran wgpu 30.0.1 y pollster 1.0.1
+
+**Contexto:** La fase 0 dibuja por wgpu (`docs/DESIGN.md`, "Toda la salida gráfica pasa por
+wgpu"). Las funciones de wgpu que piden adaptador y dispositivo devuelven futuros, y hay que
+esperarlos en el hilo que dibuja.
+
+**Decisión:** Entran como dependencias directas, con versión exacta en `Cargo.toml`:
+
+- wgpu 30.0.1, licencia `MIT OR Apache-2.0`. Primer release 2019-01-24, último 2026-08-22. Pide
+  Rust 1.87.
+- pollster 1.0.1, licencia `Apache-2.0/MIT`. Primer release 2020-04-07, último 2026-07-10. Espera
+  un futuro en el hilo actual con `pollster::block_on`.
+
+Las dos están en el escalón 1 y cumplen la regla 3 de `docs/DESIGN.md`, "Seguridad de las
+dependencias", según la API de crates.io consultada el 2026-10-02. Con ellas en el árbol,
+`cargo deny check` dio `advisories ok, bans ok, licenses ok, sources ok`, y `cargo audit` revisó
+126 crates sin avisos. unicode-ident 1.0.26 entra por naga, de wgpu, con su Unicode-3.0.
+
+**Alternativas:** Un `block_on` propio, del escalón 2. No hizo falta, porque pollster está en el
+escalón 1.
+
+**Estado:** `vigente`
+
+## 2026-10-02: El dispositivo se pide con los límites de WebGL2
+
+**Contexto:** `docs/DESIGN.md`, "Dos niveles gráficos", pide que toda capacidad del motor funcione
+en el nivel base.
+
+**Decisión:** `gpu::iniciar` pide el dispositivo con `Limits::downlevel_webgl2_defaults()`, los
+límites más bajos que define wgpu, y del adaptador toma solo el tamaño máximo de textura, para que
+la superficie quepa en la ventana. No pide funciones opcionales. Así, salvo ese tamaño, ninguna
+cifra que use el nivel completo falta en el nivel base. El tamaño sí cambia: el 2026-10-02, sobre
+llvmpipe, la textura 3D llegaba a 2048 con GL y a 4096 con Vulkan.
+
+Los límites topean cifras y nada más. Las `DownlevelFlags` del adaptador no bajan con ellos: el
+2026-10-02, sobre llvmpipe, a GL le faltaban siete, entre ellas `VIEW_FORMATS`, y a OpenGL ES 3.0
+dieciséis, entre ellas `COMPUTE_SHADERS`; a Vulkan, ninguna. Lo que el nivel base no tiene por esa
+vía lo encuentran las pruebas que dibujan también con GL y con OpenGL ES.
+
+**Alternativas:** `Limits::downlevel_defaults()`, que wgpu documenta para OpenGL y no para WebGL2.
+Se descartó porque el navegador está entre las plataformas del Backlog.
+
+**Estado:** `vigente`
+
+## 2026-10-02: cargo-deny revisa los dos objetivos Linux
+
+**Contexto:** Por defecto, cargo-deny revisa las dependencias de todos los objetivos, también las
+de Windows y macOS. Hoy el motor se comprueba solo en Linux (`docs/REQUIREMENTS.md`, sección 4).
+
+**Decisión:** `deny.toml` limita el grafo a `x86_64-unknown-linux-gnu` y
+`aarch64-unknown-linux-gnu`. Una plataforma que salga del Backlog suma su objetivo en el mismo PR.
+El 2026-10-02 también pasó sin el filtro. Cambia `docs/DESIGN.md`, "Licencias de las
+dependencias" y "Seguridad de las dependencias".
+
+**Alternativas:** Revisar todos los objetivos. Se descartó porque un aviso sobre un crate de una
+plataforma que todavía no se compila frenaría una fase de Linux.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 0
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registran las fuentes leídas el 2026-10-02 para la fase 0. No se copió código.
+
+- Código y documentación publicados de wgpu 30.0.1 y wgpu-types 30.0.1,
+  https://static.crates.io/crates/wgpu/wgpu-30.0.1.crate y
+  https://static.crates.io/crates/wgpu-types/wgpu-types-30.0.1.crate, los paquetes que baja
+  `cargo fetch`, licencia `MIT OR Apache-2.0`. Se tomaron las firmas de `Instance::new`,
+  `InstanceDescriptor`, `enumerate_adapters`, `request_adapter`, `request_device`,
+  `DeviceDescriptor` y `Limits::downlevel_webgl2_defaults`.
+- pollster 1.0.1, https://static.crates.io/crates/pollster/pollster-1.0.1.crate, licencia
+  `Apache-2.0/MIT`. Se tomó la firma de `block_on`.
+- API de crates.io, https://crates.io/api/v1/crates/ más el nombre del crate. Se tomaron licencia y
+  fechas de wgpu, winit, pollster, bytemuck y raw-window-handle.
+- rustup, "Overrides", https://rust-lang.github.io/rustup/overrides.html. Se tomó la forma de
+  `rust-toolchain.toml`.
+- Cargo, "Configuration", https://doc.rust-lang.org/cargo/reference/config.html. Se tomó
+  la clave `linker` de `[target.aarch64-unknown-linux-gnu]`.
+- Git, "githooks", https://git-scm.com/docs/githooks. Se tomaron `pre-commit` y `core.hooksPath`.
+- cargo-deny, "config", https://embarkstudios.github.io/cargo-deny/checks/cfg.html. Se tomó el
+  campo `targets` de `[graph]`.
+- Debian, https://packages.debian.org/bookworm/arm64/ más el paquete. Se tomó que bookworm trae
+  libegl1, libegl-mesa0, libgl1-mesa-dri con `panfrost_dri.so`, mesa-vulkan-drivers, libgles2 y
+  cage para arm64, con Mesa 22.3.6.
+
+Salvo donde se dice, la licencia de cada página no se verificó.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Las citas textuales del autor no cuentan para las reglas 1 y 2
+
+**Contexto:** La corrección de la siembra trajo citas textuales del autor con palabras de la lista
+de la regla 1 de prosa, y con una frase que coincide con la expresión regular de la regla 2. Una
+cita no se reescribe, así que esas dos reglas subían sin prosa nueva. En el pedido de la sesión del
+2026-10-02, el autor autorizó que las citas no cuenten.
+
+**Decisión:** Una cita textual del autor va en una viñeta propia que abre con comillas, o con su
+etiqueta, como `**A13.**`, y comillas. El comando de las reglas 1 y 2 de `CLAUDE.md`, sección 9, la
+deja en blanco junto con sus líneas de continuación. Con el comando nuevo, el 2026-10-02 las dos
+reglas dieron 0 en los 9 archivos del corpus, y sus líneas base se reescribieron con esa fecha.
+Cambia `CLAUDE.md`, sección 9.
+
+**Alternativas:** Subir las líneas base a 2 y a 1, la otra salida que planteó el informe de la
+corrección. El autor eligió esta.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Entra winit 0.30.13, sin las decoraciones Adwaita
+
+**Contexto:** La fase 1 abre una ventana y lee el teclado, y no había biblioteca de ventanas
+elegida.
+
+**Decisión:** Entra winit 0.30.13 como dependencia directa, con versión exacta y solo las funciones
+`rwh_06`, `x11`, `wayland` y `wayland-dlopen`. Queda afuera `wayland-csd-adwaita`, que dibuja la
+barra de título en Wayland con fuentes propias.
+
+- Licencia `Apache-2.0`, del escalón 1.
+- Primer release 2016-03-26. La versión estable más nueva es 0.30.13, del 2026-03-02, y el último
+  release publicado es 0.31.0-beta.3, del 2026-09-04, según la API de crates.io consultada el
+  2026-10-02.
+- Con winit en el árbol, `cargo deny check` dio los cuatro chequeos en `ok`, y `cargo audit` revisó
+  247 crates sin avisos.
+
+**Alternativas:** Las funciones por defecto de winit, con las decoraciones Adwaita. Se descartaron
+porque suman crates de fuentes y de dibujo que el mínimo viable no usa. Sin ellas, en un compositor
+Wayland que pide decoraciones del cliente, winit dibuja el marco simple de smithay-client-toolkit:
+una barra de 24 píxeles con botones y sin el título. No verificado en un compositor, porque nada
+corrió sobre Wayland.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 1
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registran las fuentes leídas el 2026-10-02 para la fase 1. No se copió código.
+
+- Paquete publicado de winit 0.30.13, https://static.crates.io/crates/winit/winit-0.30.13.crate,
+  licencia `Apache-2.0`. Se tomaron sus funciones de compilación, que en Linux solo trae los
+  backends `x11` y `wayland` en `src/platform_impl/linux/`, y las firmas de `ApplicationHandler`,
+  `EventLoop::run_app`, `owned_display_handle` y `KeyEvent`.
+- Paquete publicado de wgpu 30.0.1, https://static.crates.io/crates/wgpu/wgpu-30.0.1.crate,
+  licencia `MIT OR Apache-2.0`. Se tomaron `Surface::get_current_texture`, que devuelve
+  `CurrentSurfaceTexture`, `Queue::present` y `SurfaceConfiguration`.
+- Página de manual de cage en bookworm, https://manpages.debian.org/bookworm/cage/cage.1.en.html.
+  Se tomó la forma `cage [--] aplicación [argumentos]`. Licencia de la página: no verificada.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La textura del sprite se arma en el código
+
+**Contexto:** La fase 2 dibuja un sprite con textura. Leer una imagen de un archivo pide un
+decodificador de formato, que sería una dependencia más.
+
+**Decisión:** La textura es un damero de 4 por 4 en dos colores, armado en `sprite::damero`. No
+entra ninguna dependencia para la fase 2.
+
+**Alternativas:** Un crate que decodifique PNG. Se dejó afuera porque el mínimo viable pide un
+sprite y no la carga de imágenes, que no tiene fase.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Las pruebas de dibujo leen un lienzo fuera de pantalla
+
+**Contexto:** El criterio de las fases 2 y 3 pide un sí o un no sin mirar la pantalla, y el pedido
+de la sesión del 2026-10-02 pide comprobar lo dibujado leyendo el cuadro de vuelta.
+
+**Decisión:** Las pruebas dibujan la escena en un `Lienzo`, una textura que se copia a memoria, y
+comparan píxeles elegidos con su color esperado, con tolerancia de 2 por canal. Corren sin ventana,
+en GL y en Vulkan, con el mismo código que dibuja en la ventana. Los ejemplos, en el modo de cuadros
+fijos, prueban la ventana y la superficie.
+
+**Alternativas:** Leer la textura de la superficie de la ventana. Se descartó porque ata la prueba a
+una ventana abierta.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 2
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registra la fuente leída el 2026-10-02 para la fase 2. No se copió código.
+
+- Paquetes publicados de wgpu 30.0.1 y wgpu-types 30.0.1, los de la fase 0, licencia
+  `MIT OR Apache-2.0`. Se tomaron `RenderPipelineDescriptor`, `VertexState`, `FragmentState`,
+  `TexelCopyTextureInfo`, `TexelCopyBufferInfo`, `TexelCopyBufferLayout`,
+  `COPY_BYTES_PER_ROW_ALIGNMENT`, `Buffer::map_async`, `Buffer::get_mapped_range` y
+  `PollType::wait_indefinitely`.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La matemática del cubo y la cámara se escribe en el motor
+
+**Contexto:** La fase 3 necesita vectores, una matriz de vista y una de perspectiva. Hay crates
+del escalón 1 que las traen, y la escalera de licencias pone un crate permisivo antes que
+implementar, con la cita del autor que guarda la entrada 2026-10-01 "Escalera de licencias para las
+dependencias". El autor también pidió el motor escrito en Rust desde cero, con la cita que guarda
+la entrada 2026-10-01 "El lenguaje es Rust estable, con su motivo". Las dos citas tiran para lados
+distintos, y el pedido de la sesión del 2026-10-02 no autorizó esta decisión.
+
+**Decisión:** `src/matematica.rs` escribe lo que usan el cubo y la cámara: suma, resta, producto
+escalar y vectorial, normalizar, `perspectiva`, `mirar`, `trasladar` y `multiplicar`, con sus
+pruebas. La escalera se aplicó a lo que queda fuera del dominio del motor, como la ventana, la API
+gráfica y la espera de futuros, y el código propio quedó para lo que es el motor.
+
+Cambia `docs/DESIGN.md`, "Licencias de las dependencias". Queda a confirmar por el autor: si la
+rechaza, el código que cambia es `src/matematica.rs`, `src/camara.rs`, `src/cubo.rs` y quizá
+`src/lib.rs`, más la dependencia nueva en `Cargo.toml` y `Cargo.lock`.
+
+**Alternativas:** Un crate de álgebra lineal del escalón 1. Se dejó afuera por el pedido del motor
+escrito desde cero.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La cámara se traslada sin girar
+
+**Contexto:** El criterio de la fase 3 pide una cámara que se mueva con el teclado.
+
+**Decisión:** La cámara mira siempre en la misma dirección y se traslada un paso de 0,25 por tecla:
+W y S, o arriba y abajo, avanzan y retroceden; A y D, o izquierda y derecha, van de costado; R y F
+suben y bajan. El ejemplo `cubo` arranca arriba y a un costado, para que se vean tres caras.
+
+**Alternativas:** Girar con el mouse. Se dejó afuera porque el mínimo viable pide solo teclado.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 3
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registra la fuente leída el 2026-10-02 para la fase 3. No se copió código.
+
+- Paquete publicado de wgpu 30.0.1, https://static.crates.io/crates/wgpu/wgpu-30.0.1.crate,
+  licencia `MIT OR Apache-2.0`. Se tomaron `DepthStencilState`,
+  `RenderPassDepthStencilAttachment`, `VertexBufferLayout` y `VertexAttribute`.
+
+La matriz de perspectiva con profundidad de 0 a 1 y la de vista se escribieron sin fuente
+consultada, y sus pruebas en `src/matematica.rs` comprueban los planos cercano y lejano y la
+posición del ojo.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La gravedad del cubo usa un integrador propio
+
+**Contexto:** La decisión entre físicas propias o delegadas a un crate seguía abierta en
+`docs/DESIGN.md`, "Sin escribir todavía", y bloqueaba la fase 4. El pedido de la sesión del
+2026-10-02 la autorizó, con la marca de que el autor la confirme.
+
+**Decisión:** La fase 4 integra la gravedad con un integrador propio, Euler semiimplícito, en
+`src/simulacion.rs`: primero la velocidad y después la posición con la velocidad nueva. La decisión
+entre físicas propias o un crate sigue abierta para cuando haga falta detectar colisiones. La fase
+4 ya no está bloqueada por ella. Queda a confirmar por el autor.
+
+**Alternativas:** Rapier, el candidato del hueco "Rapier" de `docs/ARCHITECTURE.md`. Para una caída
+sin colisiones no hacía falta. Euler explícito, que con 60 pasos se aleja lo mismo de 4,905 m pero
+hacia el otro lado; el semiimplícito conserva mejor la energía en movimientos que oscilan.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La caída se cuenta en pasos y no en tiempo de reloj
+
+**Contexto:** El criterio de la fase 4 pide la misma cifra con el dibujo a 30 y a 240 cuadros por
+segundo. Si la caída terminara cuando pasa 1 s de reloj, un cuadro largo podría sumar un paso de
+más.
+
+**Decisión:** `Simulacion::avanzar` recibe un tope de pasos, y el ejemplo `caida` termina al cumplir
+tantos pasos como la frecuencia, 1 s simulado. El tiempo de reloj solo decide cuándo se da cada
+paso. Así la bajada depende de la cantidad de pasos y no de cómo se repartieron entre los cuadros.
+
+**Alternativas:** Terminar a 1 s de reloj. Se descartó por el paso de más.
+
+**Estado:** `vigente`
+
+## 2026-10-02: El nivel base también se prueba sobre OpenGL ES
+
+**Contexto:** `docs/DESIGN.md`, "Dos niveles gráficos", pone en el nivel base de Linux lo que la
+tabla de wgpu llama OpenGL ES 3.0+. Con EGL, wgpu 30.0.1 pide primero un contexto de OpenGL 3.3 de
+escritorio si EGL lo ofrece, y OpenGL ES solo si eso falla. Mesa lo ofrece, así que sobre llvmpipe
+el backend GL abrió OpenGL 4.5 de escritorio en todas las corridas del 2026-10-02 sin las variables
+de Mesa de abajo, y lo mismo se espera en la Radeon del equipo de desarrollo. Cuál de los dos abre
+en el equipo mínimo no está verificado, y wgpu 30.0.1 no tiene una opción que obligue a usar
+OpenGL ES.
+
+**Decisión:** `tests/gles.sh` corre las pruebas que terminan en `_con_gl`, la de arranque y cuatro
+que dibujan, con `MESA_GL_VERSION_OVERRIDE=3.1`, que deja a Mesa sin OpenGL 3.3, y con
+`MESA_GLES_VERSION_OVERRIDE=3.0`, que anuncia el OpenGL ES como 3.0. Exige que todos los adaptadores
+GL hayan abierto OpenGL ES 3.0, y el 2026-10-02 dio sí en las 5 pruebas. Cambia `docs/DESIGN.md`,
+"Dos niveles gráficos", en "Cómo se comprueba".
+
+Con esas variables, el resultado se parece a un OpenGL ES 3.0 sin serlo. Mesa anuncia menos
+extensiones de OpenGL ES: el 2026-10-02, sobre llvmpipe, `eglinfo` con `EGL_PLATFORM=surfaceless`
+dio 128 en lugar de 159, y entre las que faltan está `GL_EXT_texture_norm16`. Sigue anunciando
+otras que un driver 3.0 puede no tener, como `GL_EXT_draw_buffers_indexed`. wgpu decide por la
+versión y por esas extensiones.
+
+**Alternativas:** Correr solo el backend GL por defecto. Se descartó porque deja sin probar el
+camino que puede tomar el equipo mínimo. Fijar en `GlBackendOptions` la versión menor de
+OpenGL ES: wgpu la ignora cuando abre OpenGL de escritorio.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la revisión de las fases 0 a 4
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta. La revisión de las fases 0 a 4 leyó fuentes nuevas, y lo que se tomó de ellas lo
+volvió a leer el agente el 2026-10-02.
+
+**Decisión:** Se registran esas fuentes. No se copió código.
+
+- Paquete publicado de wgpu-hal 30.0.1,
+  https://static.crates.io/crates/wgpu-hal/wgpu-hal-30.0.1.crate, licencia `MIT OR Apache-2.0`.
+  De `src/gles/egl.rs` se tomó el orden de los contextos, primero OpenGL 3.3 de escritorio y
+  después OpenGL ES, y que en Wayland llama a `wl_egl_window_create` de libwayland-egl. De
+  `src/gles/adapter.rs`, que la superficie GL fuera de Windows ofrece solo `Fifo`.
+- Paquete publicado de wayland-sys 0.31.11,
+  https://static.crates.io/crates/wayland-sys/wayland-sys-0.31.11.crate, licencia `MIT`. De
+  `src/egl.rs` se tomó que carga `libwayland-egl.so.1` en tiempo de ejecución y entra en pánico si
+  no la encuentra.
+- Paquete publicado de smithay-client-toolkit 0.19.2,
+  https://static.crates.io/crates/smithay-client-toolkit/smithay-client-toolkit-0.19.2.crate,
+  licencia `MIT`. De `src/shell/xdg/fallback_frame.rs` se tomó que el marco simple tiene una barra
+  de 24 píxeles con botones y no dibuja el título.
+- La documentación de `CurrentSurfaceTexture::Lost` en el paquete de wgpu 30.0.1 de la fase 0: una
+  superficie perdida se crea de nuevo con `Instance::create_surface` y después se configura.
+- Código de cage 0.1.4-4, el de bookworm,
+  https://sources.debian.org/data/main/c/cage/0.1.4-4/cage.c, licencia `MIT` según
+  https://sources.debian.org/data/main/c/cage/0.1.4-4/LICENSE. Se tomó que `main` devuelve su propio
+  código, que cambia solo cuando falla cage, y que `cleanup_primary_client` anota el código del
+  programa que corre adentro sin devolverlo.
+- Índice de paquetes de bookworm para arm64,
+  https://deb.debian.org/debian/dists/bookworm/main/binary-arm64/Packages.xz. Se tomó que
+  libwayland-egl1 1.21.0-1 existe, y que no está entre los 140 paquetes que traen libegl1,
+  libegl-mesa0, libgl1-mesa-dri y cage con sus dependencias y recomendados. Licencia del índice:
+  no verificada.
+- Mesa, "Environment Variables", https://docs.mesa3d.org/envvars.html. Se tomaron
+  `MESA_GL_VERSION_OVERRIDE`, que cambia la versión de OpenGL que anuncia Mesa, y
+  `MESA_GLES_VERSION_OVERRIDE`, que cambia lo que devuelve `glGetString(GL_VERSION)` para OpenGL ES.
+  La página advierte: "Mesa may not really implement all the features of the given version".
+  Licencia de la página: no verificada.
+
+**Estado:** `vigente`

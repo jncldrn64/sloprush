@@ -1,0 +1,6 @@
+#!/bin/sh
+# Antes de cada push: licencias, avisos de seguridad y orígenes de las dependencias.
+# docs/DESIGN.md, "Licencias de las dependencias" y "Seguridad de las dependencias".
+set -e
+cargo deny check
+cargo audit

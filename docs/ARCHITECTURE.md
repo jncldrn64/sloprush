@@ -11,12 +11,21 @@ lista en la sección 5.
 
 ## 1. El repo, archivo por archivo
 
-Comprobado el 2026-10-01 contra `git ls-files`. No hay código.
+Comprobado el 2026-10-02 contra `git ls-files`.
 
+- `.cargo/config.toml`: el linker para compilar hacia aarch64 desde x86_64, `aarch64-linux-gnu-gcc`.
+- `.githooks/pre-commit`: `cargo fmt --check`, `cargo clippy` sin advertencias y `cargo test` antes
+  de cada commit. Se activa con `git config core.hooksPath .githooks`.
+- `.githooks/pre-push`: `cargo deny check` y `cargo audit` antes de cada push.
+- `.gitignore`: deja afuera `target/`.
 - `AGENTS.md`: la puerta para las herramientas que buscan ese nombre. Apunta a `CLAUDE.md`.
 - `CHANGELOG.md`: qué cambió y cuándo.
 - `CLAUDE.md`: el método de trabajo, la jerarquía de los documentos y el piso de prosa.
+- `Cargo.lock`: la versión de cada crate del árbol.
+- `Cargo.toml`: el paquete `sloprush` 0.2.0, edición 2024, sin publicar, con sus dependencias a
+  versión exacta.
 - `LICENSE`: el texto de la GNU Affero General Public License, versión 3.
+- `deny.toml`: la configuración de cargo-deny.
 - `docs/ARCHITECTURE.md`: este archivo.
 - `docs/DECISIONS.md`: por qué el repo es como es.
 - `docs/DESIGN.md`: cómo se escribe el código.
@@ -24,24 +33,115 @@ Comprobado el 2026-10-01 contra `git ls-files`. No hay código.
 - `docs/REQUIREMENTS.md`: qué tiene que ser verdad, y para quién.
 - `docs/ROADMAP.md`: las fases hasta el mínimo viable y el Backlog.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
-- `tests/README.md`: cómo se corren los tests. Todavía no hay tests.
+- `examples/arranque.rs`: el ejemplo de la fase 0. Arranca la GPU, imprime los adaptadores, el
+  elegido y su backend, y cierra.
+- `examples/caida.rs`: el ejemplo de la fase 4. El cubo cae; tras 1 s simulado imprime cuánto
+  bajó y termina.
+- `examples/cubo.rs`: el ejemplo de la fase 3. Dibuja el cubo; el teclado mueve la cámara.
+- `examples/sprite.rs`: el ejemplo de la fase 2. Dibuja el sprite en el centro de la ventana.
+- `examples/ventana.rs`: el ejemplo de la fase 1. Abre una ventana, la limpia en cada cuadro e
+  imprime cada tecla.
+- `rust-toolchain.toml`: fija Rust 1.97.0, con rustfmt, clippy y el objetivo
+  `aarch64-unknown-linux-gnu`.
+- `src/camara.rs`: `Camara`, con `mirando`, `mover` por tecla y `matriz` de vista y perspectiva.
+- `src/cubo.rs`: `Cubo`, que carga sombreador, malla y pipeline, y dibuja con búfer de
+  profundidad.
+- `src/cubo.wgsl`: el sombreador del cubo, en WGSL.
+- `src/dibujo.rs`: lo que comparten las escenas: `Destino` y `limpiar`.
+- `src/gpu.rs`: el arranque de wgpu. `crear_instancia`, `listar_adaptadores`, `iniciar` y
+  `es_por_software`, y la elección de backend, `Eleccion` y `separar_backend`.
+- `src/lib.rs`: la raíz del crate. Expone los módulos `camara`, `cubo`, `dibujo`, `gpu`, `lienzo`,
+  `matematica`, `registro`, `simulacion`, `sprite` y `ventana`, más `wgpu`, `winit` y `VERSION`.
+- `src/lienzo.rs`: `Lienzo`, una textura fuera de pantalla que `leer` copia a memoria, y las
+  funciones `pixel` y `parecido` para las pruebas.
+- `src/matematica.rs`: vectores y matrices de 4 por 4: `perspectiva`, `mirar`, `trasladar` y
+  `multiplicar`.
+- `src/registro.rs`: `arranque`, `carga`, `cierre`, `entrada`, `advertencia`, `resultado` y
+  `error`.
+- `src/simulacion.rs`: `Simulacion`, a paso fijo de frecuencia configurable, con `dar_paso`,
+  `avanzar` con tope de pasos y `separar_frecuencia` para `--hz`.
+- `src/sprite.rs`: `Sprite`, que carga el sombreador, la textura de damero y el pipeline, y
+  `ubicar` y `dibujar`.
+- `src/sprite.wgsl`: el sombreador del sprite, en WGSL.
+- `src/ventana.rs`: la ventana con winit. `Opciones`, el rasgo `Escena` y `correr`, que abre la
+  ventana, conecta la superficie de wgpu y dibuja la escena cuadro a cuadro.
+- `tests/README.md`: cómo se corren las pruebas.
+- `tests/arranque.rs`: las pruebas de la fase 0.
+- `tests/caida.rs`: las pruebas de la fase 4: la simulación sin GPU, y la caída leída de vuelta de
+  un lienzo.
+- `tests/caida.sh`: la prueba de la fase 4 con ventana, dentro de un Xvfb.
+- `tests/cubo.rs`: las pruebas de la fase 3, que leen el lienzo de vuelta.
+- `tests/gles.sh`: las pruebas que terminan en `_con_gl`, otra vez con OpenGL ES 3.0 forzado en
+  Mesa.
+- `tests/lienzo.rs`: la lectura de un lienzo cuyas filas llevan relleno.
+- `tests/sprite.rs`: las pruebas de la fase 2, que leen el lienzo de vuelta.
+- `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
+- `tests/ventana.sh`: la prueba de la fase 1, dentro de un Xvfb.
 
 ## 2. Dónde vive cada cosa
 
-Sin describir todavía: no hay código (sección 5).
+Comprobado el 2026-10-02 contra el código.
+
+| Qué | Símbolo | Ruta |
+|---|---|---|
+| Versión que muestra el motor | `VERSION`, de `CARGO_PKG_VERSION` | `src/lib.rs` |
+| Backend pedido | `Eleccion`, `separar_backend`, opción `--backend` | `src/gpu.rs` |
+| Límites del dispositivo | `Limits::downlevel_webgl2_defaults` dentro de `iniciar` | `src/gpu.rs` |
+| Detección de software | `es_por_software`, `NOMBRES_DE_SOFTWARE` | `src/gpu.rs` |
+| Opciones con ventana | `Opciones::desde_args`: `--cuadros`, `--limite-fps` | `src/ventana.rs` |
+| Modo de presentación | `Fifo`; con tope, `Immediate` o `Mailbox` si hay | `src/ventana.rs` |
+| Superficie perdida | `CurrentSurfaceTexture::Lost` en `App::cuadro` crea otra | `src/ventana.rs` |
+| Tamaño inicial de la ventana | 640 por 480, en `App::abrir` | `src/ventana.rs` |
+| Colores y tamaño del damero | `COLOR_A`, `COLOR_B`, `LADO` | `src/sprite.rs` |
+| Posición del sprite | `ubicar`, en coordenadas de recorte | `src/sprite.rs` |
+| Colores de las caras del cubo | `COLORES` y `CARA_MAS_X`, `_Y` y `_Z` | `src/cubo.rs` |
+| Formato de profundidad | `Depth32Float` en `FORMATO_PROFUNDIDAD` | `src/cubo.rs` |
+| Teclas y paso de la cámara | `Camara::mover`, `PASO` de 0,25 | `src/camara.rs` |
+| Campo de visión y planos | `CAMPO_VERTICAL`, `CERCA`, `LEJOS` | `src/camara.rs` |
+| Gravedad | `GRAVEDAD` | `src/simulacion.rs` |
+| Frecuencia del paso | `FRECUENCIA_POR_DEFECTO`, `FRECUENCIA_MAXIMA` | `src/simulacion.rs` |
+| Integrador | Euler semiimplícito en `Simulacion::dar_paso` | `src/simulacion.rs` |
+| Altura inicial del cubo que cae | `ALTURA_INICIAL`, 2 m | `examples/caida.rs` |
+| Alineación de la lectura | `COPY_BYTES_PER_ROW_ALIGNMENT`, en `Lienzo::leer` | `src/lienzo.rs` |
+| Formato del registro | `[etapa] mensaje` en stdout; `[error]` en stderr | `src/registro.rs` |
+| Versión de Rust | `channel` | `rust-toolchain.toml` |
+| Linker de aarch64 | `linker` | `.cargo/config.toml` |
+| Licencias y avisos | `[graph]`, `[advisories]`, `[licenses]`, `[sources]` | `deny.toml` |
+
+Las cifras de la tabla y las de las constantes que nombra las muestra este comando:
+
+```sh
+grep -nE "const (PASO|CAMPO_VERTICAL|CERCA|LEJOS|GRAVEDAD|FRECUENCIA_[A-Z_]+|ALTURA_INICIAL)\
+|PhysicalSize::new" src/*.rs examples/*.rs
+```
 
 ## 3. Recursos y cómo se reinicia cada uno
 
-Sin describir todavía: no hay código (sección 5).
+Comprobado el 2026-10-02 contra el código.
+
+- `target/`: lo que compila cargo. Se regenera solo; `cargo clean` lo borra.
+- Las bases de avisos de RustSec que bajan cargo-deny y cargo-audit, fuera del repo, en
+  `~/.cargo/advisory-dbs` y `~/.cargo/advisory-db`. Cada corrida las actualiza.
+- La GPU: `iniciar` crea instancia, adaptador, dispositivo y cola dentro de `Gpu`, y se liberan al
+  soltar ese valor.
+- El sprite: su textura de damero, su muestreador, su buffer uniforme y su pipeline viven dentro de
+  `Sprite`, y se liberan con él.
+- El cubo: su malla, su buffer uniforme y su pipeline viven dentro de `Cubo`. La textura de
+  profundidad se crea en el primer cuadro y se vuelve a crear cuando cambia el tamaño del destino.
+- El lienzo: su textura vive dentro de `Lienzo`; `leer` crea un buffer de lectura que se libera
+  al terminar.
+- La ventana y su superficie: las crea `App::abrir` al arrancar el bucle de eventos, y se liberan
+  en `exiting`, al terminar. Una superficie perdida se crea de nuevo en `App::cuadro`, para la
+  misma ventana.
 
 ## 4. Tamaño
 
-Sin describir todavía: no hay código (sección 5).
+Comprobado el 2026-10-02: 2553 líneas de Rust, contadas con
+`wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía
 
-Todo el código, porque todavía no hay. Lo lista `git ls-files '*.rs' Cargo.toml`, que el
-2026-10-01 devolvió cero archivos.
+Nada. Cada archivo de `git ls-files` figura en la sección 1, comprobado el 2026-10-02.
 
 ## 6. Huecos conocidos
 
@@ -55,41 +155,45 @@ si eso cierra un hueco de esta lista.
   siembra. En el equipo mínimo: `lsmod | grep panfrost`, `dmesg | grep -i -E "panfrost|mali"` y
   `ls -l /dev/dri/`. Bloquea la fase 0.
 - **2026-10-01: Una ventana en el equipo mínimo.** Sin verificar que el equipo mínimo pueda mostrar
-  una ventana; su neofetch no mostró sesión gráfica. En la conversación de diseño se propuso cage,
-  un compositor Wayland de una sola aplicación que se instala por apt. Nunca se instaló ni se
-  probó. Lo muestra abrir un programa con ventana en el equipo mínimo, con un monitor conectado.
-  Bloquea la fase 0.
-- **2026-10-01: Qué pide la biblioteca de ventanas.** Sin verificar si la biblioteca de ventanas que
-  se elija necesita X11 o Wayland, o si puede dibujar directo sobre la salida de video. Todavía no
-  hay biblioteca elegida. Lo muestran la lista de plataformas de su documentación y una ventana
-  abierta con ella en el equipo mínimo sin compositor.
+  una ventana; su neofetch no mostró sesión gráfica. winit 0.30.13 abre ventanas solo por X11 o por
+  Wayland, así que hace falta un servidor o un compositor. En la conversación de diseño se propuso
+  cage, un compositor Wayland de una sola aplicación que bookworm trae por apt. Nunca se instaló ni
+  se probó. Las corridas con ventana del 2026-10-02 fueron por X11, en Xvfb, así que el camino por
+  Wayland que usa cage, con winit por Wayland y wgpu por EGL sobre Wayland, no corrió nunca. Lo
+  muestra el ejemplo `ventana`, que ya existe, corrido con cage en el equipo mínimo con los bloques
+  "Para llevar el binario al equipo mínimo" y "Para cerrarla, en el equipo mínimo" de la fase 1 de
+  `docs/ROADMAP.md`; no hace falta cerrar la fase 1 antes. Bloquea la fase 0.
 - **2026-10-01: glibc de bookworm.** Sin verificar que un binario aarch64 compilado en el equipo de
-  desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. Lo muestran
-  `ldd --version` en los dos equipos y arrancar ese binario en el equipo mínimo. Bloquea la fase 0.
+  desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. El 2026-10-02, compilados
+  en un contenedor con Ubuntu 24.04 y glibc 2.39, los ejemplos `arranque`, `ventana`, `sprite`,
+  `cubo` y `caida` piden como máximo `GLIBC_2.34`, y bookworm trae la 2.36. Lo muestran
+  `aarch64-linux-gnu-objdump -T` sobre el binario de
+  `target/aarch64-unknown-linux-gnu/release/examples/`, `ldd --version` en el equipo mínimo y
+  arrancar el binario ahí. Bloquea la fase 0.
 - **2026-10-01: Vulkan en el equipo de desarrollo.** Sin verificar. En el equipo de desarrollo:
   `vulkaninfo --summary`.
 - **2026-10-01: Frecuencia del monitor del equipo de desarrollo.** Sin verificar. En el equipo de
   desarrollo: `xrandr`.
 - **2026-10-01: wgpu sobre Panfrost.** Sin verificar que wgpu funcione con el backend OpenGL ES
   sobre Panfrost en la Mali-G31. El README de wgpu 30.0.1 marca OpenGL ES 3.0+ en Linux como
-  "Downlevel/Best Effort Support". Lo muestra el ejemplo de la fase 0 corrido en el equipo mínimo,
-  que imprime adaptador y backend. Bloquea la fase 0.
+  "Downlevel/Best Effort Support". Tampoco se sabe si ahí abre OpenGL ES u OpenGL de escritorio: con
+  EGL, wgpu 30.0.1 pide primero OpenGL 3.3 de escritorio, y con Mesa sobre llvmpipe lo consiguió
+  (`docs/DECISIONS.md`, 2026-10-02 "El nivel base también se prueba sobre OpenGL ES"). Lo muestra el
+  ejemplo de la fase 0 corrido en el equipo mínimo: la línea `adaptador elegido` imprime el backend
+  `Gl` y, en el campo `driver`, cuál de los dos abrió. Bloquea la fase 0.
 - **2026-10-01: Licencia de Fyrox.** El manifiesto de Fyrox 1.0.1 declara MIT, y el paquete
   publicado no trae archivo de licencia. Lo muestra el archivo de licencia de su repositorio,
   https://github.com/FyroxEngine/Fyrox. Bevy, macroquad y ggez quedaron comprobados:
   `docs/DECISIONS.md`, 2026-10-01 "Fuentes consultadas en la siembra".
 - **2026-10-01: Memoria al compilar.** El equipo de desarrollo mostraba 13649 MiB ocupados de
-  15945, y compilar puede agotarla. Sin medir. Lo muestra `free -m` antes y durante la primera
-  compilación completa.
-- **2026-10-01: Licencias del árbol de wgpu.** Sin verificar que las dependencias de wgpu cumplan
-  `docs/DESIGN.md`, "Licencias de las dependencias" y "Seguridad de las dependencias". El
-  manifiesto de unicode-ident 1.0.26, del que depende proc-macro2 1.0.107, declara
-  `(MIT OR Apache-2.0) AND Unicode-3.0`, y Unicode-3.0 ya está en el escalón 1. Sin verificar que
-  el árbol de wgpu traiga proc-macro2. Lo muestran `cargo deny check licenses` y
-  `cargo deny check advisories` con el primer `Cargo.lock` que traiga wgpu.
-- **2026-10-01: Rapier.** Candidato para las físicas. rapier3d 0.36.0 declara Apache-2.0, del
+  15945, y compilar puede agotarla. Sin medir en ese equipo. El 2026-10-02, en el contenedor de la
+  sesión, con 4 núcleos, `cargo build --release --examples` desde cero subió la memoria usada de
+  709 a 2553 MiB, según `free -m` cada medio segundo. Lo muestra la misma corrida en el equipo de
+  desarrollo.
+- **2026-10-01: Rapier.** Candidato para las colisiones. rapier3d 0.36.0 declara Apache-2.0, del
   escalón 1. Su primer release es del 2020-08-19 y el último del 2026-09-25, según la API de
   crates.io consultada el 2026-10-01, así que como dependencia directa cumple la regla 3 de
   `docs/DESIGN.md`, "Seguridad de las dependencias". Sin verificar: su árbol de dependencias
   contra las dos normas. Lo muestra `cargo deny check` con un `Cargo.lock` que lo traiga. La
-  decisión entre físicas propias o un crate sigue sin tomar.
+  gravedad usa un integrador propio, a confirmar por el autor (`docs/DECISIONS.md`, 2026-10-02 "La
+  gravedad del cubo usa un integrador propio"); para las colisiones, la decisión sigue sin tomar.

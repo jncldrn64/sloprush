@@ -1,0 +1,12 @@
+[package]
+name = "sloprush"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+license-file = "LICENSE"
+
+[dependencies]
+pollster = "=1.0.1"
+wgpu = "=30.0.1"
+winit = { version = "=0.30.13", default-features = false, features = ["rwh_06", "x11", "wayland", "wayland-dlopen"] }
