@@ -46,6 +46,7 @@ adaptador, la prueba que lo pide falla y dice cuál.
 - `tests/caida.sh`: corre el ejemplo `caida` en un Xvfb con tope de 30 y de 240 cuadros por
   segundo. Sin argumento corre GL y Vulkan, y exige código 0 y la misma bajada en las cuatro
   corridas. Pide Xvfb y no corre con `cargo test`.
-- `tests/gles.sh`: corre con `cargo test` las pruebas que dibujan con GL, con OpenGL ES forzado
-  por dos variables de Mesa, y exige que todas hayan abierto OpenGL ES 3.0. Pide Mesa y no corre
+- `tests/gles.sh`: corre con `cargo test` las pruebas que terminan en `_con_gl`, la de arranque y
+  cuatro que dibujan, con OpenGL ES forzado por dos variables de Mesa, y exige que todas hayan
+  abierto OpenGL ES 3.0. Pide Mesa y no corre
   con `cargo test`. Sale de `docs/DESIGN.md`, "Dos niveles gráficos".

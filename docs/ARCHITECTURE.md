@@ -71,7 +71,8 @@ Comprobado el 2026-10-02 contra `git ls-files`.
   un lienzo.
 - `tests/caida.sh`: la prueba de la fase 4 con ventana, dentro de un Xvfb.
 - `tests/cubo.rs`: las pruebas de la fase 3, que leen el lienzo de vuelta.
-- `tests/gles.sh`: las pruebas que dibujan con GL, otra vez con OpenGL ES 3.0 forzado en Mesa.
+- `tests/gles.sh`: las pruebas que terminan en `_con_gl`, otra vez con OpenGL ES 3.0 forzado en
+  Mesa.
 - `tests/lienzo.rs`: la lectura de un lienzo cuyas filas llevan relleno.
 - `tests/sprite.rs`: las pruebas de la fase 2, que leen el lienzo de vuelta.
 - `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
@@ -97,7 +98,8 @@ Comprobado el 2026-10-02 contra el código.
 | Formato de profundidad | `Depth32Float` en `FORMATO_PROFUNDIDAD` | `src/cubo.rs` |
 | Teclas y paso de la cámara | `Camara::mover`, `PASO` de 0,25 | `src/camara.rs` |
 | Campo de visión y planos | `CAMPO_VERTICAL`, `CERCA`, `LEJOS` | `src/camara.rs` |
-| Gravedad y frecuencia | `GRAVEDAD`, `FRECUENCIA_POR_DEFECTO` de 60 Hz | `src/simulacion.rs` |
+| Gravedad | `GRAVEDAD` | `src/simulacion.rs` |
+| Frecuencia del paso | `FRECUENCIA_POR_DEFECTO`, `FRECUENCIA_MAXIMA` | `src/simulacion.rs` |
 | Integrador | Euler semiimplícito en `Simulacion::dar_paso` | `src/simulacion.rs` |
 | Altura inicial del cubo que cae | `ALTURA_INICIAL`, 2 m | `examples/caida.rs` |
 | Alineación de la lectura | `COPY_BYTES_PER_ROW_ALIGNMENT`, en `Lienzo::leer` | `src/lienzo.rs` |
@@ -109,7 +111,7 @@ Comprobado el 2026-10-02 contra el código.
 Las cifras de la tabla y las de las constantes que nombra las muestra este comando:
 
 ```sh
-grep -nE "const (PASO|CAMPO_VERTICAL|CERCA|LEJOS|GRAVEDAD|FRECUENCIA_POR_DEFECTO|ALTURA_INICIAL)\
+grep -nE "const (PASO|CAMPO_VERTICAL|CERCA|LEJOS|GRAVEDAD|FRECUENCIA_[A-Z_]+|ALTURA_INICIAL)\
 |PhysicalSize::new" src/*.rs examples/*.rs
 ```
 
@@ -134,7 +136,7 @@ Comprobado el 2026-10-02 contra el código.
 
 ## 4. Tamaño
 
-Comprobado el 2026-10-02: 2545 líneas de Rust, contadas con
+Comprobado el 2026-10-02: 2553 líneas de Rust, contadas con
 `wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía
@@ -158,9 +160,9 @@ si eso cierra un hueco de esta lista.
   cage, un compositor Wayland de una sola aplicación que bookworm trae por apt. Nunca se instaló ni
   se probó. Las corridas con ventana del 2026-10-02 fueron por X11, en Xvfb, así que el camino por
   Wayland que usa cage, con winit por Wayland y wgpu por EGL sobre Wayland, no corrió nunca. Lo
-  muestra el ejemplo `ventana`, que ya existe, corrido con cage en el equipo mínimo con el primer
-  bloque de la fase 1 de `docs/ROADMAP.md`; no hace falta cerrar la fase 1 antes. Bloquea la
-  fase 0.
+  muestra el ejemplo `ventana`, que ya existe, corrido con cage en el equipo mínimo con los bloques
+  "Para llevar el binario al equipo mínimo" y "Para cerrarla, en el equipo mínimo" de la fase 1 de
+  `docs/ROADMAP.md`; no hace falta cerrar la fase 1 antes. Bloquea la fase 0.
 - **2026-10-01: glibc de bookworm.** Sin verificar que un binario aarch64 compilado en el equipo de
   desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. El 2026-10-02, compilados
   en un contenedor con Ubuntu 24.04 y glibc 2.39, los ejemplos `arranque`, `ventana`, `sprite`,

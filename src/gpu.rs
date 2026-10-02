@@ -1,11 +1,11 @@
 //! Arranque de la GPU: instancia, adaptador y dispositivo de wgpu.
 //!
 //! Todo el dibujo del motor pasa por wgpu (`docs/DESIGN.md`, "Toda la salida gráfica pasa por
-//! wgpu"). El dispositivo se pide con los límites de WebGL2, los más bajos de wgpu, para que
-//! ninguna cifra que use el nivel completo falte en el nivel base (`docs/DESIGN.md`, "Dos niveles
-//! gráficos"). Los límites topean cifras y nada más: lo que el nivel base no tiene por otras
-//! razones, como las `DownlevelFlags` del adaptador, lo encuentran las pruebas que dibujan también
-//! con GL.
+//! wgpu"). El dispositivo se pide con los límites de WebGL2, los más bajos de wgpu, salvo el
+//! tamaño máximo de textura, que sale de cada adaptador para que la superficie quepa en la
+//! ventana; ese tamaño cambia entre niveles (`docs/DESIGN.md`, "Dos niveles gráficos"). Los
+//! límites topean cifras y nada más: lo que el nivel base no tiene por otras razones, como las
+//! `DownlevelFlags` del adaptador, lo encuentran las pruebas que dibujan también con GL.
 
 use std::fmt;
 

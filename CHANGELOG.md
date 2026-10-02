@@ -35,6 +35,8 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
   integrador propio, a confirmar por el autor, y la decisión queda para las colisiones.
 - `docs/DESIGN.md`, "Licencias de las dependencias": la matemática del motor se escribe en el
   motor, a confirmar por el autor.
+- `docs/DESIGN.md`, "Licencias de las dependencias" y "Seguridad de las dependencias": cargo-deny
+  revisa el árbol de los objetivos x86_64 y aarch64 de Linux.
 - `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
   prosa, y sus líneas base se midieron de nuevo.
 

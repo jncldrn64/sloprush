@@ -1,9 +1,10 @@
 #!/bin/sh
-# El nivel base por OpenGL ES, sin pantalla. Con Mesa, el backend GL de wgpu 30.0.1 abre OpenGL 3.3
-# de escritorio si el driver lo ofrece, y OpenGL ES si no. MESA_GL_VERSION_OVERRIDE=3.1 hace que
-# no lo ofrezca, y MESA_GLES_VERSION_OVERRIDE=3.0 hace que el OpenGL ES se anuncie como 3.0, el
-# piso de la tabla de wgpu. wgpu se limita a lo que anuncia esa versión; Mesa no le quita nada.
-# Corre las pruebas que dibujan con GL y comprueba que todas abrieron OpenGL ES 3.0.
+# El nivel base por OpenGL ES, sin pantalla. Con EGL, el backend GL de wgpu 30.0.1 pide OpenGL 3.3
+# de escritorio si el driver lo ofrece, y Mesa le da 4.5; si no, abre OpenGL ES.
+# MESA_GL_VERSION_OVERRIDE=3.1 hace que Mesa no lo ofrezca, y MESA_GLES_VERSION_OVERRIDE=3.0 hace
+# que el OpenGL ES se anuncie como 3.0, el piso de la tabla de wgpu. Se parece a un OpenGL ES 3.0
+# sin serlo: docs/DECISIONS.md, 2026-10-02 "El nivel base también se prueba sobre OpenGL ES".
+# Corre las pruebas que terminan en _con_gl y comprueba que todas abrieron OpenGL ES 3.0.
 # Pide Mesa. Uso: tests/gles.sh. Sale con 0 si todo dio sí.
 set -eu
 salida="$(mktemp)"
@@ -21,4 +22,4 @@ if [ "$total" -eq 0 ] || [ "$es" -ne "$total" ]; then
   grep 'adaptador elegido' "$salida" || true
   exit 1
 fi
-echo "sí: las $total pruebas con GL dibujaron sobre OpenGL ES 3.0"
+echo "sí: las $total pruebas con GL corrieron sobre OpenGL ES 3.0"

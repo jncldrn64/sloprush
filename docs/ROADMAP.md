@@ -135,8 +135,9 @@ Tiene que elegir la Mali con backend `Gl` y sin la línea `[advertencia]`, y el 
 que decir `OpenGL ES`, que es lo que pide el criterio. Si `/dev/dri/renderD128` no deja leer al
 usuario, falta agregarlo al grupo `render`. Esas corridas cierran los huecos "Panfrost en el equipo
 mínimo", "glibc de bookworm" y "wgpu sobre Panfrost". El hueco "Una ventana en el equipo mínimo"
-se cierra con el primer bloque de la fase 1 en el equipo mínimo. Ese bloque ya se puede correr,
-porque el ejemplo `ventana` existe, y no hace falta cerrar antes la fase 1.
+se cierra con los bloques "Para llevar el binario al equipo mínimo" y "Para cerrarla, en el equipo
+mínimo" de la fase 1. Ya se pueden correr, porque el ejemplo `ventana` existe, y no hace falta
+cerrar antes la fase 1.
 
 ## Fase 1: Ventana y teclado
 
@@ -198,6 +199,7 @@ conectados:
 
 ```sh
 sudo apt install cage libwayland-egl1
+rm -f ventana.log
 cage -- sh -c './ventana --backend gl --cuadros 600 > ventana.log 2>&1
   echo "código $?" >> ventana.log'
 cat ventana.log
@@ -209,9 +211,10 @@ aprietan algunas teclas. Después, `ventana.log` tiene que terminar con `código
 `[entrada] tecla` por cada tecla. Eso cierra el hueco "Una ventana en el equipo mínimo".
 
 El código se anota desde adentro porque cage 0.1.4, la de bookworm, sale con 0 aunque el ejemplo
-falle. libwayland-egl1 hace falta porque bajo cage wgpu abre la superficie GL por Wayland con esa
-biblioteca, y ninguno de los otros paquetes la trae. Fuentes: `docs/DECISIONS.md`, 2026-10-02
-"Fuentes consultadas en la revisión de las fases 0 a 4".
+falle. El registro viejo se borra antes, para que una corrida en la que cage no arranca no deje leer
+el de la corrida anterior. libwayland-egl1 hace falta porque bajo cage wgpu abre la superficie GL
+por Wayland con esa biblioteca, y ninguno de los otros paquetes la trae. Fuentes:
+`docs/DECISIONS.md`, 2026-10-02 "Fuentes consultadas en la revisión de las fases 0 a 4".
 
 ## Fase 2: Sprite 2D
 
@@ -260,6 +263,7 @@ naranja y crema en el centro de una ventana azul oscura.
 `EJEMPLO=sprite`:
 
 ```sh
+rm -f sprite.log
 cage -- sh -c './sprite --backend gl --cuadros 300 > sprite.log 2>&1
   echo "código $?" >> sprite.log'
 grep código sprite.log; grep -c advertencia sprite.log
@@ -323,6 +327,7 @@ matemática del cubo y la cámara se escribe en el motor".
 `EJEMPLO=cubo`:
 
 ```sh
+rm -f cubo.log
 cage -- sh -c './cubo --backend gl --cuadros 600 > cubo.log 2>&1
   echo "código $?" >> cubo.log'
 grep código cubo.log; grep -c advertencia cubo.log; grep 'cámara en' cubo.log
@@ -357,9 +362,14 @@ menos de 2 % de 4,905 m.
 `cargo test --test caida` simuló la caída sin GPU con cuadros de 1/30 s, de 1/240 s y de largos
 irregulares: los tres dieron la misma bajada, bit a bit, y a 60 Hz se aleja 1,67 % de 4,905 m.
 
-2 s de tiempo real dieron 120 pasos con cuadros de 1/240 s y 119 con cuadros de 1/30 s, porque cada
-paso dura 16 666 667 ns; con un paso por cuadro, esa prueba falla. Sin el tope de pasos, falla la de
-30 contra 240.
+2 s de tiempo real dieron 120 pasos con cuadros de 1/240 s y 119 con cuadros de 1/30 s, porque
+los cuadros, redondeados a nanosegundos, no suman justo 2 s; el comando de abajo da las sumas y lo
+que piden 120 pasos. Con un paso por cuadro, esa prueba falla. Sin el tope de pasos, falla la de 30
+contra 240.
+
+```sh
+python3 -c "r=lambda s: round(s*1e9); print(60*r(1/30), 480*r(1/240), 120*r(1/60))"
+```
 
 La misma suite dibujó el cubo en un lienzo, con GL y con Vulkan, a la altura inicial y tras 1 s
 simulado, y lo encontró arriba y después abajo. `sh tests/gles.sh` corrió esa parte sobre OpenGL ES
@@ -372,10 +382,11 @@ código 0, que el script comprueba. En el commit de la fase, el hook de pre-comm
 `cargo deny check`, con los cuatro chequeos en `ok`, y `cargo audit`, que revisó 247 crates sin
 avisos. El binario aarch64 de `caida` pide como máximo `GLIBC_2.34`.
 
-Con GL, la superficie de wgpu 30.0.1 solo ofrece la presentación `Fifo`, que espera la
-sincronización vertical. En una pantalla real, el tope de 240 con GL queda en la frecuencia del
-monitor, y el ejemplo lo avisa en una línea `[arranque]`. La comparación sigue siendo entre dos
-ritmos de dibujo distintos.
+Con GL, la superficie de wgpu 30.0.1 solo ofrece la presentación `Fifo`, y el ejemplo lo avisa en
+una línea `[arranque]`. En una pantalla real se espera que el tope de 240 con GL quede en la
+frecuencia del monitor. No verificado: ninguna corrida pasó por una pantalla real, wgpu 30.0.1 no
+fija el intervalo de intercambio de EGL, y en Xvfb `Fifo` no esperó. Aun así, la comparación sigue
+siendo entre dos ritmos de dibujo distintos.
 
 **Para cerrarla, en el equipo de desarrollo:**
 
@@ -395,6 +406,7 @@ integrador propio".
 `EJEMPLO=caida`:
 
 ```sh
+rm -f caida-30.log caida-240.log
 cage -- sh -c './caida --backend gl --limite-fps 30 > caida-30.log 2>&1
   echo "código $?" >> caida-30.log'
 cage -- sh -c './caida --backend gl --limite-fps 240 > caida-240.log 2>&1
@@ -403,8 +415,8 @@ grep -h código caida-30.log caida-240.log; grep -h bajó caida-30.log caida-240
 ```
 
 El primer `grep` tiene que dar dos veces `código 0`. El segundo, dos líneas con la misma cifra, y
-la misma que en el equipo de desarrollo. Ahí el tope de 240 queda en la frecuencia del monitor,
-porque el equipo mínimo dibuja con GL.
+la misma que en el equipo de desarrollo. Ahí se espera que el tope de 240 quede en la frecuencia
+del monitor, porque el equipo mínimo dibuja con GL. No verificado.
 
 ## Backlog
 

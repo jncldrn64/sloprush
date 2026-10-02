@@ -54,7 +54,8 @@ fn el_mismo_tiempo_real_da_los_mismos_pasos_a_30_y_a_240() {
     };
     let a_30 = pasos(Duration::from_secs_f64(1.0 / 30.0), 60);
     let a_240 = pasos(Duration::from_secs_f64(1.0 / 240.0), 480);
-    // Cada paso dura 16 666 667 ns, un poco más que 1/60 s, así que 2 s dan 119 o 120 pasos.
+    // Los cuadros redondeados a nanosegundos no suman justo 2 s: 1 999 999 980 ns a 30 y
+    // 2 000 000 160 ns a 240, y 120 pasos piden 2 000 000 040 ns. Por eso dan 119 y 120.
     assert!(
         a_30.abs_diff(a_240) <= 1 && a_30.abs_diff(120) <= 1,
         "a 30: {a_30} pasos, a 240: {a_240}"

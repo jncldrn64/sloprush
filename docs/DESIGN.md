@@ -89,12 +89,13 @@ simulación. La prueba pide dos cosas:
 - con el dibujo limitado a 30 y a 240 cuadros por segundo, lo que baja es exactamente igual;
 - a 60 Hz, lo que baja se aleja menos de 2 % de 4,905 m, la caída de la fórmula continua.
 
-Con n pasos por segundo, un integrador de Euler se aleja de 4,905 m en una fracción 1/n, que a
-60 Hz es 1,67 %. El comando de abajo da 4,98675 m con Euler semiimplícito y 4,82325 m con Euler
-explícito. `cargo test --test caida` comprueba las dos cosas sin GPU, y `tests/caida.sh` comprueba
-la igualdad con la ventana, en GL y en Vulkan. La misma suite comprueba además que 2 s de tiempo
-real den los mismos pasos con cuadros de 1/30 s y de 1/240 s, con un paso de diferencia como mucho
-por el redondeo del paso a nanosegundos. Las dos dieron sí el 2026-10-02 sobre llvmpipe.
+Con n pasos por segundo, un integrador de Euler se aleja de 4,905 m en una fracción 1/n, que a 60 Hz
+es 1,67 %. El comando de abajo da 4,98675 m con Euler semiimplícito y 4,82325 m con Euler explícito.
+`cargo test --test caida` comprueba las dos cosas sin GPU, y `tests/caida.sh` comprueba la igualdad
+con la ventana, en GL y en Vulkan. La misma suite comprueba además que 2 s de tiempo real den los
+mismos pasos con cuadros de 1/30 s y de 1/240 s, con un paso de diferencia como mucho, porque los
+cuadros, redondeados a nanosegundos, no suman justo 2 s. Las dos dieron sí el 2026-10-02 sobre
+llvmpipe.
 
 ```sh
 python3 -c "g,h,n=9.81,1/60,60; print(g*h*h*n*(n+1)/2, g*h*h*n*(n-1)/2)"

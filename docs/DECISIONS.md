@@ -732,8 +732,10 @@ escalón 1.
 en el nivel base.
 
 **Decisión:** `gpu::iniciar` pide el dispositivo con `Limits::downlevel_webgl2_defaults()`, los
-límites más bajos que define wgpu, y del adaptador toma solo el tamaño máximo de textura. No pide
-funciones opcionales. Así, ninguna cifra que use el nivel completo falta en el nivel base.
+límites más bajos que define wgpu, y del adaptador toma solo el tamaño máximo de textura, para que
+la superficie quepa en la ventana. No pide funciones opcionales. Así, salvo ese tamaño, ninguna
+cifra que use el nivel completo falta en el nivel base. El tamaño sí cambia: el 2026-10-02, sobre
+llvmpipe, la textura 3D llegaba a 2048 con GL y a 4096 con Vulkan.
 
 Los límites topean cifras y nada más. Las `DownlevelFlags` del adaptador no bajan con ellos: el
 2026-10-02, sobre llvmpipe, a GL le faltaban siete, entre ellas `VIEW_FORMATS`, y a OpenGL ES 3.0
@@ -911,7 +913,8 @@ pruebas. La escalera se aplicó a lo que queda fuera del dominio del motor, como
 gráfica y la espera de futuros, y el código propio quedó para lo que es el motor.
 
 Cambia `docs/DESIGN.md`, "Licencias de las dependencias". Queda a confirmar por el autor: si la
-rechaza, el cambio se limita a `src/matematica.rs`, `src/camara.rs` y `src/cubo.rs`.
+rechaza, el código que cambia es `src/matematica.rs`, `src/camara.rs`, `src/cubo.rs` y quizá
+`src/lib.rs`, más la dependencia nueva en `Cargo.toml` y `Cargo.lock`.
 
 **Alternativas:** Un crate de álgebra lineal del escalón 1. Se dejó afuera por el pedido del motor
 escrito desde cero.
@@ -983,16 +986,22 @@ paso. Así la bajada depende de la cantidad de pasos y no de cómo se repartiero
 **Contexto:** `docs/DESIGN.md`, "Dos niveles gráficos", pone en el nivel base de Linux lo que la
 tabla de wgpu llama OpenGL ES 3.0+. Con EGL, wgpu 30.0.1 pide primero un contexto de OpenGL 3.3 de
 escritorio si EGL lo ofrece, y OpenGL ES solo si eso falla. Mesa lo ofrece, así que sobre llvmpipe
-el backend GL abrió OpenGL 4.5 de escritorio en todas las corridas del 2026-10-02, y lo mismo se
-espera en la Radeon del equipo de desarrollo. Cuál de los dos abre en el equipo mínimo no está
-verificado. wgpu 30.0.1 no tiene una opción que obligue a usar OpenGL ES.
+el backend GL abrió OpenGL 4.5 de escritorio en todas las corridas del 2026-10-02 sin las variables
+de Mesa de abajo, y lo mismo se espera en la Radeon del equipo de desarrollo. Cuál de los dos abre
+en el equipo mínimo no está verificado, y wgpu 30.0.1 no tiene una opción que obligue a usar
+OpenGL ES.
 
-**Decisión:** `tests/gles.sh` corre las pruebas que dibujan con GL con
-`MESA_GL_VERSION_OVERRIDE=3.1`, que deja a Mesa sin OpenGL 3.3, y con
+**Decisión:** `tests/gles.sh` corre las pruebas que terminan en `_con_gl`, la de arranque y cuatro
+que dibujan, con `MESA_GL_VERSION_OVERRIDE=3.1`, que deja a Mesa sin OpenGL 3.3, y con
 `MESA_GLES_VERSION_OVERRIDE=3.0`, que anuncia el OpenGL ES como 3.0. Exige que todos los adaptadores
-GL hayan abierto OpenGL ES 3.0. wgpu se limita a lo que anuncia esa versión, y Mesa no quita lo que
-3.0 no trae. El 2026-10-02 dio sí en las 5 pruebas con GL. Cambia `docs/DESIGN.md`, "Dos niveles
-gráficos", en "Cómo se comprueba".
+GL hayan abierto OpenGL ES 3.0, y el 2026-10-02 dio sí en las 5 pruebas. Cambia `docs/DESIGN.md`,
+"Dos niveles gráficos", en "Cómo se comprueba".
+
+Con esas variables, el resultado se parece a un OpenGL ES 3.0 sin serlo. Mesa anuncia menos
+extensiones de OpenGL ES: el 2026-10-02, sobre llvmpipe, `eglinfo` con `EGL_PLATFORM=surfaceless`
+dio 128 en lugar de 159, y entre las que faltan está `GL_EXT_texture_norm16`. Sigue anunciando
+otras que un driver 3.0 puede no tener, como `GL_EXT_draw_buffers_indexed`. wgpu decide por la
+versión y por esas extensiones.
 
 **Alternativas:** Correr solo el backend GL por defecto. Se descartó porque deja sin probar el
 camino que puede tomar el equipo mínimo. Fijar en `GlBackendOptions` la versión menor de
@@ -1034,7 +1043,9 @@ volvió a leer el agente el 2026-10-02.
   libegl-mesa0, libgl1-mesa-dri y cage con sus dependencias y recomendados. Licencia del índice:
   no verificada.
 - Mesa, "Environment Variables", https://docs.mesa3d.org/envvars.html. Se tomaron
-  `MESA_GL_VERSION_OVERRIDE` y `MESA_GLES_VERSION_OVERRIDE`, y que la segunda cambia la versión
-  anunciada sin quitar funciones. Licencia de la página: no verificada.
+  `MESA_GL_VERSION_OVERRIDE`, que cambia la versión de OpenGL que anuncia Mesa, y
+  `MESA_GLES_VERSION_OVERRIDE`, que cambia lo que devuelve `glGetString(GL_VERSION)` para OpenGL ES.
+  La página advierte: "Mesa may not really implement all the features of the given version".
+  Licencia de la página: no verificada.
 
 **Estado:** `vigente`

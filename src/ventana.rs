@@ -27,7 +27,8 @@ pub struct Opciones {
     pub cuadros: Option<u64>,
     /// Tope de cuadros dibujados por segundo. Con tope, la presentación usa un modo sin
     /// sincronización vertical si la superficie lo ofrece. En Linux, la superficie GL de wgpu
-    /// 30.0.1 solo ofrece `Fifo`, así que ahí el tope no pasa la frecuencia del monitor.
+    /// 30.0.1 solo ofrece `Fifo`: donde el sistema de ventanas respeta la sincronización
+    /// vertical, el tope no pasa la frecuencia del monitor. Xvfb no la respeta.
     pub limite_fps: Option<u32>,
 }
 
@@ -165,8 +166,8 @@ impl App<'_> {
             (Some(_), Some(modo)) => modo,
             (Some(_), None) => {
                 registro::arranque(
-                    "la superficie solo presenta con sincronización vertical: el tope de dibujo \
-                     no pasa la frecuencia del monitor",
+                    "la superficie solo ofrece Fifo: donde se respeta la sincronización vertical, \
+                     el tope de dibujo no pasa la frecuencia del monitor",
                 );
                 wgpu::PresentMode::Fifo
             }
@@ -227,12 +228,16 @@ impl App<'_> {
                 estado.ventana.request_redraw();
                 return;
             }
-            // Una superficie perdida no se reconfigura: se crea otra para la misma ventana.
+            // Una superficie perdida no se reconfigura: se crea otra para la misma ventana. La
+            // vieja se suelta antes de configurar la nueva, porque con EGL una ventana admite una
+            // sola superficie.
             wgpu::CurrentSurfaceTexture::Lost => {
                 match estado.gpu.instancia.create_surface(estado.ventana.clone()) {
                     Ok(nueva) => {
-                        nueva.configure(&estado.gpu.dispositivo, &estado.configuracion);
                         estado.superficie = nueva;
+                        estado
+                            .superficie
+                            .configure(&estado.gpu.dispositivo, &estado.configuracion);
                         registro::arranque("superficie perdida, creada de nuevo");
                         estado.ventana.request_redraw();
                     }
