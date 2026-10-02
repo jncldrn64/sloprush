@@ -2,6 +2,14 @@
 
 use crate::gpu::Gpu;
 
+/// Dónde se dibuja un cuadro: la vista de una textura y su tamaño en píxeles.
+#[derive(Clone, Copy)]
+pub struct Destino<'a> {
+    pub vista: &'a wgpu::TextureView,
+    pub ancho: u32,
+    pub alto: u32,
+}
+
 /// Limpia `destino` con un color y envía el trabajo a la cola.
 pub fn limpiar(gpu: &Gpu, destino: &wgpu::TextureView, color: wgpu::Color) {
     let mut codificador = gpu

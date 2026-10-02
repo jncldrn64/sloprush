@@ -883,3 +883,48 @@ cada consulta.
   `Buffer::map_async`, `Buffer::get_mapped_range` y `PollType::wait_indefinitely`.
 
 **Estado:** `vigente`
+
+## 2026-10-02: La matemática del cubo y la cámara se escribe en el motor
+
+**Contexto:** La fase 3 necesita vectores, una matriz de vista y una de perspectiva. Hay crates
+del escalón 1 que las traen, y la escalera de licencias pone un crate permisivo antes que
+implementar. El autor, en cambio, pidió el motor escrito en Rust desde cero, con la cita que guarda
+la entrada 2026-10-01 "El lenguaje es Rust estable, con su motivo".
+
+**Decisión:** `src/matematica.rs` escribe lo que usan el cubo y la cámara: suma, resta, producto
+escalar y vectorial, normalizar, `perspectiva`, `mirar`, `trasladar` y `multiplicar`, con sus
+pruebas. La escalera se aplicó a lo que queda fuera del dominio del motor, como la ventana, la API
+gráfica y la espera de futuros, y el código propio quedó para lo que es el motor.
+
+**Alternativas:** Un crate de álgebra lineal del escalón 1. Se dejó afuera por ese pedido del
+autor. La línea entre las dos reglas no está escrita, y el autor la puede fijar.
+
+**Estado:** `vigente`
+
+## 2026-10-02: La cámara se traslada sin girar
+
+**Contexto:** El criterio de la fase 3 pide una cámara que se mueva con el teclado.
+
+**Decisión:** La cámara mira siempre en la misma dirección y se traslada un paso de 0,25 por tecla:
+W y S, o arriba y abajo, avanzan y retroceden; A y D, o izquierda y derecha, van de costado; R y F
+suben y bajan. El ejemplo `cubo` arranca arriba y a un costado, para que se vean tres caras.
+
+**Alternativas:** Girar con el mouse. Se dejó afuera porque el mínimo viable pide solo teclado.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 3
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registra la fuente leída el 2026-10-02 para la fase 3. No se copió código.
+
+- Código publicado de wgpu 30.0.1, licencia `MIT OR Apache-2.0`. Se tomaron `DepthStencilState`,
+  `RenderPassDepthStencilAttachment`, `VertexBufferLayout` y `VertexAttribute`.
+
+La matriz de perspectiva con profundidad de 0 a 1 y la de vista se escribieron sin fuente
+consultada, y sus pruebas en `src/matematica.rs` comprueban los planos cercano y lejano y la
+posición del ojo.
+
+**Estado:** `vigente`

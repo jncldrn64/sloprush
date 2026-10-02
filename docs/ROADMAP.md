@@ -228,7 +228,7 @@ cage -- ./sprite --backend gl --cuadros 300 > sprite.log; echo $?; grep -c adver
 
 ## Fase 3: Cubo 3D con cámara
 
-**Estado:** `pendiente`
+**Estado:** `lista para verificación`
 
 **Objetivo:** dibujar un cubo 3D visto desde una cámara que se mueve con el teclado.
 
@@ -245,6 +245,35 @@ comprueba el autor.
 **Bloquea:** fase 4.
 
 **Bloqueada por:** fase 1.
+
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe. `cargo test --test
+cubo` dibujó el cubo en un lienzo de 64 por 64 con GL y con Vulkan y leyó los píxeles: de frente se
+ve la cara +z, desde la derecha la +x, y tras cuatro pasos con D el centro queda vacío y el cubo a
+la izquierda. Sin la prueba de profundidad, la prueba falla.
+
+Dentro de un Xvfb, el ejemplo `cubo` con `--cuadros 30` salió con código 0 en los dos backends, y
+las teclas W, D, D y R que mandó xdotool movieron la cámara un paso de 0,25 cada una.
+
+**Para cerrarla, en el equipo de desarrollo:**
+
+```sh
+cargo test --test cubo
+cargo run --example cubo -- --backend vulkan
+cargo run --example cubo -- --backend gl
+```
+
+Se ve el cubo con tres caras de colores distintos. W, A, S, D, las flechas, R y F mueven la cámara,
+y cada paso sale como una línea `[resultado] cámara en`. Al cerrar la ventana, `echo $?` da 0.
+
+**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, cambiando
+`ventana` por `cubo`:
+
+```sh
+cage -- ./cubo --backend gl --cuadros 600 > cubo.log; echo $?; grep -c advertencia cubo.log
+```
+
+Mientras corre se aprietan algunas teclas de movimiento. `echo $?` tiene que dar 0, `grep -c`
+tiene que dar 0, y `cubo.log` tiene que traer las líneas `[resultado] cámara en`.
 
 ## Fase 4: Gravedad sobre el cubo
 

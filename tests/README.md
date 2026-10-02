@@ -28,3 +28,7 @@ dice cuál.
   píxeles leídos y el damero.
 - `tests/sprite.rs`: dibuja el sprite en un lienzo de 64 por 64 con GL y con Vulkan y comprueba el
   fondo y las casillas del damero, píxel por píxel. Sale del criterio de aceptación de la fase 2.
+- Pruebas unitarias de `src/matematica.rs`, `src/camara.rs` y `src/cubo.rs`: vista, perspectiva,
+  traslación, el paso de cada tecla y la malla del cubo.
+- `tests/cubo.rs`: dibuja el cubo con GL y con Vulkan desde varias posiciones de cámara y comprueba
+  qué cara se ve y dónde. Sale del criterio de aceptación de la fase 3.

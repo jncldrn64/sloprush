@@ -35,18 +35,25 @@ Comprobado el 2026-10-02 contra `git ls-files`.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
 - `examples/arranque.rs`: el ejemplo de la fase 0. Arranca la GPU, imprime los adaptadores, el
   elegido y su backend, y cierra.
+- `examples/cubo.rs`: el ejemplo de la fase 3. Dibuja el cubo; el teclado mueve la cámara.
 - `examples/sprite.rs`: el ejemplo de la fase 2. Dibuja el sprite en el centro de la ventana.
 - `examples/ventana.rs`: el ejemplo de la fase 1. Abre una ventana, la limpia en cada cuadro e
   imprime cada tecla.
 - `rust-toolchain.toml`: fija Rust 1.97.0, con rustfmt, clippy y el objetivo
   `aarch64-unknown-linux-gnu`.
-- `src/dibujo.rs`: pasos de dibujo compartidos. Hoy, `limpiar`.
+- `src/camara.rs`: `Camara`, con `mirando`, `mover` por tecla y `matriz` de vista y perspectiva.
+- `src/cubo.rs`: `Cubo`, que carga sombreador, malla y pipeline, y dibuja con búfer de
+  profundidad.
+- `src/cubo.wgsl`: el sombreador del cubo, en WGSL.
+- `src/dibujo.rs`: lo que comparten las escenas: `Destino` y `limpiar`.
 - `src/gpu.rs`: el arranque de wgpu. `crear_instancia`, `listar_adaptadores`, `iniciar` y
   `es_por_software`, y la elección de backend, `Eleccion` y `separar_backend`.
-- `src/lib.rs`: la raíz del crate. Expone los módulos `dibujo`, `gpu`, `lienzo`, `registro`,
-  `sprite` y `ventana`, y `wgpu` y `VERSION`.
+- `src/lib.rs`: la raíz del crate. Expone los módulos `camara`, `cubo`, `dibujo`, `gpu`, `lienzo`,
+  `matematica`, `registro`, `sprite` y `ventana`, más `wgpu`, `winit` y `VERSION`.
 - `src/lienzo.rs`: `Lienzo`, una textura fuera de pantalla que `leer` copia a memoria, y las
   funciones `pixel` y `parecido` para las pruebas.
+- `src/matematica.rs`: vectores y matrices de 4 por 4: `perspectiva`, `mirar`, `trasladar` y
+  `multiplicar`.
 - `src/registro.rs`: `arranque`, `carga`, `cierre`, `entrada`, `advertencia`, `resultado` y
   `error`.
 - `src/sprite.rs`: `Sprite`, que carga el sombreador, la textura de damero y el pipeline, y
@@ -56,6 +63,7 @@ Comprobado el 2026-10-02 contra `git ls-files`.
   ventana, conecta la superficie de wgpu y dibuja la escena cuadro a cuadro.
 - `tests/README.md`: cómo se corren las pruebas.
 - `tests/arranque.rs`: las pruebas de la fase 0.
+- `tests/cubo.rs`: las pruebas de la fase 3, que leen el lienzo de vuelta.
 - `tests/sprite.rs`: las pruebas de la fase 2, que leen el lienzo de vuelta.
 - `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
 - `tests/ventana.sh`: la prueba de la fase 1, dentro de un Xvfb.
@@ -75,6 +83,10 @@ Comprobado el 2026-10-02 contra el código.
 | Tamaño inicial de la ventana | 640 por 480, en `App::abrir` | `src/ventana.rs` |
 | Colores y tamaño del damero | `COLOR_A`, `COLOR_B`, `LADO` | `src/sprite.rs` |
 | Posición del sprite | `ubicar`, en coordenadas de recorte | `src/sprite.rs` |
+| Colores de las caras del cubo | `COLORES`, `CARA_MAS_X`, `CARA_MAS_Z` | `src/cubo.rs` |
+| Formato de profundidad | `Depth32Float` en `FORMATO_PROFUNDIDAD` | `src/cubo.rs` |
+| Teclas y paso de la cámara | `Camara::mover`, `PASO` de 0,25 | `src/camara.rs` |
+| Campo de visión y planos | 45 grados; cerca 0,1 y lejos 100 | `src/camara.rs` |
 | Alineación de la lectura | `COPY_BYTES_PER_ROW_ALIGNMENT`, en `Lienzo::leer` | `src/lienzo.rs` |
 | Formato del registro | `[etapa] mensaje` en stdout; `[error]` en stderr | `src/registro.rs` |
 | Versión de Rust | `channel` | `rust-toolchain.toml` |
@@ -92,6 +104,8 @@ Comprobado el 2026-10-02 contra el código.
   soltar ese valor.
 - El sprite: su textura de damero, su muestreador, su buffer uniforme y su pipeline viven dentro de
   `Sprite`, y se liberan con él.
+- El cubo: su malla, su buffer uniforme y su pipeline viven dentro de `Cubo`. La textura de
+  profundidad se crea en el primer cuadro y se vuelve a crear cuando cambia el tamaño del destino.
 - El lienzo: su textura vive dentro de `Lienzo`; `leer` crea un buffer de lectura que se libera
   al terminar.
 - La ventana y su superficie: las crea `App::abrir` al arrancar el bucle de eventos, y se liberan
@@ -99,7 +113,7 @@ Comprobado el 2026-10-02 contra el código.
 
 ## 4. Tamaño
 
-Comprobado el 2026-10-02: 1261 líneas de Rust, contadas con
+Comprobado el 2026-10-02: 2007 líneas de Rust, contadas con
 `wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía

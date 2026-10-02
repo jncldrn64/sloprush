@@ -56,6 +56,8 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
 - **bloque**: la palabra del autor en A1 de `docs/REQUIREMENTS.md`. Todavía no tiene definición:
   sale del catálogo de bloques. Fuente: 2026-10-01 "Primero el mínimo viable, después el catálogo
   de bloques, con su motivo".
+- **cámara**: el punto desde donde se ve la escena 3D, con su dirección. Hoy se traslada con el
+  teclado sin girar. Fuente: 2026-10-02 "La cámara se traslada sin girar".
 - **catálogo de bloques**: la lista de bloques que se extrae de lo construido en el mínimo viable y
   que congela el autor. Todavía no existe. Fuente: la misma entrada que **bloque**.
 - **congelar**: fijar una API por escrito, cosa que solo hace el autor. Antes de eso la API es
