@@ -783,3 +783,21 @@ cada consulta.
 Salvo donde se dice, la licencia de cada página no se verificó.
 
 **Estado:** `vigente`
+
+## 2026-10-02: Las citas textuales del autor no cuentan para las reglas 1 y 2
+
+**Contexto:** La corrección de la siembra trajo citas textuales del autor con palabras de la lista
+de la regla 1 de prosa, y con una frase que coincide con la expresión regular de la regla 2. Una
+cita no se reescribe, así que esas dos reglas subían sin prosa nueva. En el pedido de la sesión del
+2026-10-02, el autor autorizó que las citas no cuenten.
+
+**Decisión:** Una cita textual del autor va en una viñeta propia que abre con comillas, o con su
+etiqueta, como `**A13.**`, y comillas. El comando de las reglas 1 y 2 de `CLAUDE.md`, sección 9, la
+deja en blanco junto con sus líneas de continuación. Con el comando nuevo, el 2026-10-02 las dos
+reglas dieron 0 en los 9 archivos del corpus, y sus líneas base se reescribieron con esa fecha.
+Cambia `CLAUDE.md`, sección 9.
+
+**Alternativas:** Subir las líneas base a 2 y a 1, la otra salida que planteó el informe de la
+corrección. El autor eligió esta.
+
+**Estado:** `vigente`

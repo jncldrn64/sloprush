@@ -16,6 +16,10 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
   si dibuja por software.
 - Fase 0: `deny.toml`, los hooks de git de `.githooks/` y el linker para compilar hacia aarch64.
 
+### Changed
+- `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
+  prosa, y sus líneas base se midieron de nuevo.
+
 ### Removed
 - El hueco "Licencias del árbol de wgpu": `cargo deny check` pasó con el árbol de la fase 0.
 

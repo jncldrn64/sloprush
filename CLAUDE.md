@@ -188,22 +188,33 @@ cada PR la compara.
 8. **Tres oraciones seguidas de largo parecido** son la señal de que el texto se alisa. La medida es
    qué porcentaje de las ternas consecutivas cae dentro de 3 palabras.
 
+**Las citas textuales del autor no cuentan para las reglas 1 y 2.** Una cita va en una viñeta
+propia que abre con comillas, o con su etiqueta, como `**A13.**`, y comillas. El comando de esas
+dos reglas la deja en blanco junto con sus líneas de continuación. Decisión: 2026-10-02 "Las citas
+textuales del autor no cuentan para las reglas 1 y 2".
+
 El corpus son todos los `.md` versionados menos este archivo, que movería sus propios números, y
 `docs/TEMPORARY-CONTEXT.md`, exento por diseño. Los comandos, desde la raíz:
 
 ```sh
 C=$(git ls-files '*.md' ':!:CLAUDE.md' ':!:*TEMPORARY-CONTEXT.md')
 
+# Para las reglas 1 y 2: el archivo con las citas textuales del autor en blanco, sin mover las
+# líneas. Una cita es una viñeta que abre con comillas, o con **An.** y comillas, y lo que sigue.
+sincitas() { awk '/^- ("|\*\*A[0-9]+\.\*\* ")/{c=1; print ""; next}
+                  c && /^  [^ ]/{print ""; next} {c=0; print}' "$1"; }
+
 # Palabras del corpus.
 wc -w $C | tail -1
 
 # Regla 1. Lista en español; en un repo en inglés: very|absolutely|clearly|simply|probably|actually|really
-grep -niwE "muy|absolutamente|claramente|simplemente|probablemente|realmente" $C
+for f in $C; do sincitas "$f" | grep -niwE \
+  "muy|absolutamente|claramente|simplemente|probablemente|realmente" | sed "s|^|$f:|"; done
 
 # Regla 2, por archivo: palabras y casos. Dividir el primero por el segundo.
-for f in $C; do printf '%s %s %s\n' "$f" "$(wc -w < "$f")" "$(grep -ciE \
+for f in $C; do printf '%s %s %s\n' "$f" "$(wc -w < "$f")" "$(sincitas "$f" | grep -ciE \
   "no (es|son|era|fue) [^,.;]{2,45}[,;] (es|sino|son)|[a-zá-úñ]+, no (un|una|el|la|de|por|lo|a|con) [a-zá-úñ]" \
-  "$f")"; done
+  )"; done
 
 # Regla 3, viñetas del CHANGELOG de más de 60 palabras, con sus líneas de continuación.
 awk '/^- /{if(b)print w; b=1; w=NF; next} /^  [^ ]/ && b{w+=NF; next}
@@ -240,14 +251,14 @@ print(f"regla 8: {pl} planas de {t} ternas = {100*pl/max(t,1):.1f}%")
 EOF
 ```
 
-**Líneas base, medidas el 2026-10-01** con el bloque de arriba. Las reglas 1 y 2 son de la
-medición del PR que siembra los documentos, sobre 11 archivos y 7891 palabras. Las reglas 3 a 8
-se midieron de nuevo en el PR que corrige la siembra, sobre 9 archivos y 11768 palabras.
+**Líneas base.** Las reglas 1 y 2 se midieron el 2026-10-02 con el comando que deja afuera las
+citas, sobre 9 archivos y 13462 palabras. Las reglas 3 a 8 se midieron el 2026-10-01, en el PR
+que corrige la siembra, sobre 9 archivos y 11768 palabras.
 
 | Regla | Línea base |
 |---|---|
 | 1. Intensificadores | 0 apariciones |
-| 2. Paralelismo contrastivo | 0 casos en cada uno de los 11 archivos |
+| 2. Paralelismo contrastivo | 0 casos en cada uno de los 9 archivos |
 | 3. Viñetas del CHANGELOG de más de 60 palabras | 0 |
 | 4. Encabezados con paréntesis | 0 en cada uno de los 9 archivos |
 | 5. "No verificado" | sin comando: se revisa a mano |

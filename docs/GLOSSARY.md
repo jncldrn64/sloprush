@@ -14,6 +14,10 @@ suficientes términos para que el orden alfabético solo ya no alcance.
 Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la plantilla 1.0".
 
 - **borrador**: el estado en que se abre un PR. El autor lo marca listo y lo mergea.
+- **cita textual**: palabras del autor copiadas tal cual, en una viñeta propia que abre con
+  comillas o con su etiqueta, como `**A13.**`. No se reescribe ni se resume, y no cuenta para las
+  reglas 1 y 2 de prosa. Fuente: 2026-10-02 "Las citas textuales del autor no cuentan para las
+  reglas 1 y 2".
 - **contexto temporal**: lo que se observó y se perdería si nadie lo escribe, antes de saber si se
   quiere. Vive en `docs/TEMPORARY-CONTEXT.md`, y cada línea se coloca o se descarta.
 - **decisión**: una entrada de `docs/DECISIONS.md` que dice por qué algo es como es. No se edita
