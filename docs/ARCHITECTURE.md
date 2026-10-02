@@ -11,12 +11,21 @@ lista en la sección 5.
 
 ## 1. El repo, archivo por archivo
 
-Comprobado el 2026-10-01 contra `git ls-files`. No hay código.
+Comprobado el 2026-10-02 contra `git ls-files`.
 
+- `.cargo/config.toml`: el linker para compilar hacia aarch64 desde x86_64, `aarch64-linux-gnu-gcc`.
+- `.githooks/pre-commit`: `cargo fmt --check`, `cargo clippy` sin advertencias y `cargo test` antes
+  de cada commit. Se activa con `git config core.hooksPath .githooks`.
+- `.githooks/pre-push`: `cargo deny check` y `cargo audit` antes de cada push.
+- `.gitignore`: deja afuera `target/`.
 - `AGENTS.md`: la puerta para las herramientas que buscan ese nombre. Apunta a `CLAUDE.md`.
 - `CHANGELOG.md`: qué cambió y cuándo.
 - `CLAUDE.md`: el método de trabajo, la jerarquía de los documentos y el piso de prosa.
+- `Cargo.lock`: la versión de cada crate del árbol.
+- `Cargo.toml`: el paquete `sloprush` 0.2.0, edición 2024, sin publicar, con sus dependencias a
+  versión exacta.
 - `LICENSE`: el texto de la GNU Affero General Public License, versión 3.
+- `deny.toml`: la configuración de cargo-deny.
 - `docs/ARCHITECTURE.md`: este archivo.
 - `docs/DECISIONS.md`: por qué el repo es como es.
 - `docs/DESIGN.md`: cómo se escribe el código.
@@ -24,24 +33,50 @@ Comprobado el 2026-10-01 contra `git ls-files`. No hay código.
 - `docs/REQUIREMENTS.md`: qué tiene que ser verdad, y para quién.
 - `docs/ROADMAP.md`: las fases hasta el mínimo viable y el Backlog.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
-- `tests/README.md`: cómo se corren los tests. Todavía no hay tests.
+- `examples/arranque.rs`: el ejemplo de la fase 0. Arranca la GPU, imprime los adaptadores, el
+  elegido y su backend, y cierra.
+- `rust-toolchain.toml`: fija Rust 1.97.0, con rustfmt, clippy y el objetivo
+  `aarch64-unknown-linux-gnu`.
+- `src/gpu.rs`: el arranque de wgpu. `crear_instancia`, `listar_adaptadores`, `iniciar` y
+  `es_por_software`, y la elección de backend, `Eleccion` y `separar_backend`.
+- `src/lib.rs`: la raíz del crate. Expone `gpu`, `registro`, `wgpu` y `VERSION`.
+- `src/registro.rs`: `arranque`, `carga`, `cierre`, `advertencia`, `resultado` y `error`.
+- `tests/README.md`: cómo se corren las pruebas.
+- `tests/arranque.rs`: las pruebas de la fase 0.
 
 ## 2. Dónde vive cada cosa
 
-Sin describir todavía: no hay código (sección 5).
+Comprobado el 2026-10-02 contra el código.
+
+| Qué | Símbolo | Ruta |
+|---|---|---|
+| Versión que muestra el motor | `VERSION`, de `CARGO_PKG_VERSION` | `src/lib.rs` |
+| Backend pedido | `Eleccion`, `separar_backend`, opción `--backend` | `src/gpu.rs` |
+| Límites del dispositivo | `Limits::downlevel_webgl2_defaults` dentro de `iniciar` | `src/gpu.rs` |
+| Detección de software | `es_por_software`, `NOMBRES_DE_SOFTWARE` | `src/gpu.rs` |
+| Formato del registro | `[etapa] mensaje` en stdout; `[error]` en stderr | `src/registro.rs` |
+| Versión de Rust | `channel` | `rust-toolchain.toml` |
+| Linker de aarch64 | `linker` | `.cargo/config.toml` |
+| Licencias y avisos | `[graph]`, `[advisories]`, `[licenses]`, `[sources]` | `deny.toml` |
 
 ## 3. Recursos y cómo se reinicia cada uno
 
-Sin describir todavía: no hay código (sección 5).
+Comprobado el 2026-10-02 contra el código.
+
+- `target/`: lo que compila cargo. Se regenera solo; `cargo clean` lo borra.
+- Las bases de avisos de RustSec que bajan cargo-deny y cargo-audit, fuera del repo, en
+  `~/.cargo/advisory-dbs` y `~/.cargo/advisory-db`. Cada corrida las actualiza.
+- La GPU: `iniciar` crea instancia, adaptador, dispositivo y cola dentro de `Gpu`, y se liberan al
+  soltar ese valor.
 
 ## 4. Tamaño
 
-Sin describir todavía: no hay código (sección 5).
+Comprobado el 2026-10-02: 347 líneas de Rust, contadas con
+`wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía
 
-Todo el código, porque todavía no hay. Lo lista `git ls-files '*.rs' Cargo.toml`, que el
-2026-10-01 devolvió cero archivos.
+Nada. Cada archivo de `git ls-files` figura en la sección 1, comprobado el 2026-10-02.
 
 ## 6. Huecos conocidos
 
@@ -64,8 +99,11 @@ si eso cierra un hueco de esta lista.
   hay biblioteca elegida. Lo muestran la lista de plataformas de su documentación y una ventana
   abierta con ella en el equipo mínimo sin compositor.
 - **2026-10-01: glibc de bookworm.** Sin verificar que un binario aarch64 compilado en el equipo de
-  desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. Lo muestran
-  `ldd --version` en los dos equipos y arrancar ese binario en el equipo mínimo. Bloquea la fase 0.
+  desarrollo arranque con la glibc de Debian bookworm del equipo mínimo. El 2026-10-02, compilado
+  en un contenedor con Ubuntu 24.04 y glibc 2.39, el ejemplo `arranque` pide como máximo
+  `GLIBC_2.34`, y bookworm trae la 2.36. Lo muestran `aarch64-linux-gnu-objdump -T` sobre el binario
+  de `target/aarch64-unknown-linux-gnu/release/examples/`, `ldd --version` en el equipo mínimo y
+  arrancar el binario ahí. Bloquea la fase 0.
 - **2026-10-01: Vulkan en el equipo de desarrollo.** Sin verificar. En el equipo de desarrollo:
   `vulkaninfo --summary`.
 - **2026-10-01: Frecuencia del monitor del equipo de desarrollo.** Sin verificar. En el equipo de
@@ -81,12 +119,6 @@ si eso cierra un hueco de esta lista.
 - **2026-10-01: Memoria al compilar.** El equipo de desarrollo mostraba 13649 MiB ocupados de
   15945, y compilar puede agotarla. Sin medir. Lo muestra `free -m` antes y durante la primera
   compilación completa.
-- **2026-10-01: Licencias del árbol de wgpu.** Sin verificar que las dependencias de wgpu cumplan
-  `docs/DESIGN.md`, "Licencias de las dependencias" y "Seguridad de las dependencias". El
-  manifiesto de unicode-ident 1.0.26, del que depende proc-macro2 1.0.107, declara
-  `(MIT OR Apache-2.0) AND Unicode-3.0`, y Unicode-3.0 ya está en el escalón 1. Sin verificar que
-  el árbol de wgpu traiga proc-macro2. Lo muestran `cargo deny check licenses` y
-  `cargo deny check advisories` con el primer `Cargo.lock` que traiga wgpu.
 - **2026-10-01: Rapier.** Candidato para las físicas. rapier3d 0.36.0 declara Apache-2.0, del
   escalón 1. Su primer release es del 2020-08-19 y el último del 2026-09-25, según la API de
   crates.io consultada el 2026-10-01, así que como dependencia directa cumple la regla 3 de

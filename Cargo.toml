@@ -1,0 +1,11 @@
+[package]
+name = "sloprush"
+version = "0.2.0"
+edition = "2024"
+rust-version = "1.97"
+publish = false
+license-file = "LICENSE"
+
+[dependencies]
+pollster = "=1.0.1"
+wgpu = "=30.0.1"

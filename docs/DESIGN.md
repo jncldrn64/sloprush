@@ -24,8 +24,8 @@ su motivo".
 **Dónde está escrito:** los canales stable, beta y nightly están en la documentación de rustup,
 https://rust-lang.github.io/rustup/concepts/channels.html, consultada el 2026-10-01.
 
-**Cómo se comprueba:** sin comando todavía. No hay proyecto Cargo, y fijar el toolchain es
-alcance de la fase 0 de `docs/ROADMAP.md`.
+**Cómo se comprueba:** `rust-toolchain.toml` fija `channel = "1.97.0"`, y dentro del repo
+`rustc --version` da 1.97.0. Corrido el 2026-10-02 en el contenedor de la sesión.
 
 ## 2. Toda la salida gráfica pasa por wgpu
 
@@ -39,7 +39,9 @@ el navegador y en la GPU del equipo mínimo su driver libre no es conformante. D
 **Dónde está escrito:** la tabla "Supported Platforms" del README de wgpu 30.0.1,
 https://docs.rs/crate/wgpu/30.0.1/source/README.md, consultada el 2026-10-01.
 
-**Cómo se comprueba:** sin comando todavía (sección 11).
+**Cómo se comprueba:** `cargo tree -e normal --depth 1` lista las dependencias directas, y ninguna
+puede ser una API gráfica como `ash`, `glow`, `khronos-egl`, `metal` o `windows`. Corrido el
+2026-10-02: lista wgpu y pollster.
 
 ## 3. Dos niveles gráficos
 
@@ -130,8 +132,8 @@ https://opensource.org/license/unicode-3-0, consultada el 2026-10-01. Las listas
 https://embarkstudios.github.io/cargo-deny/checks/licenses/cfg.html, consultada el 2026-10-01.
 
 **Cómo se comprueba:** `cargo deny check licenses`, con el escalón 1 en `allow` y cada excepción
-de los escalones 3 y 4 en `exceptions`, una por crate y con su entrada en `docs/DECISIONS.md`. Sin
-correr: no hay dependencias, y la herramienta entra en la fase 0.
+de los escalones 3 y 4 en `exceptions`, una por crate y con su entrada en `docs/DECISIONS.md`.
+Corrido el 2026-10-02, con `exceptions` vacío: `licenses ok`.
 
 ## 7. Versión exacta de cada dependencia
 
@@ -147,8 +149,12 @@ https://doc.rust-lang.org/cargo/reference/specifying-dependencies.html, consulta
 Ahí `"1.2.3"` sin operador equivale a `^1.2.3`, que admite versiones compatibles, y `= 1.2.3` es la
 versión exacta.
 
-**Cómo se comprueba:** `git ls-files Cargo.lock` tiene que listarlo. Sin correr: no hay proyecto
-Cargo todavía.
+**Cómo se comprueba:** `git ls-files Cargo.lock` tiene que listarlo, y este comando no tiene que
+imprimir nada, porque muestra cada dependencia sin `=`. Corridos los dos el 2026-10-02.
+
+```sh
+awk '/^\[dependencies\]/{d=1;next} /^\[/{d=0} d && /=/ && !/"=/' Cargo.toml
+```
 
 ## 8. Seguridad de las dependencias
 
@@ -188,7 +194,8 @@ v = json.load(sys.stdin)["versions"]
 print(min(x["created_at"] for x in v)[:10], max(x["created_at"] for x in v)[:10])'
 ```
 
-Las reglas 1, 2 y 4 están sin correr: no hay `Cargo.lock`, y la herramienta entra en la fase 0.
+Corridas el 2026-10-02 sobre el `Cargo.lock` de la fase 0: `cargo deny check` dio `advisories ok`
+y `sources ok`, con `ignore` vacío, y la regla 3 dio 2020-04-07 y 2026-07-10 para pollster.
 
 ## 9. Los tests
 
@@ -210,8 +217,8 @@ Propuesta de la conversación de diseño, aceptada por el autor. Decisión: `doc
 **Dónde está escrito:** llvmpipe es el rasterizador por software de Mesa,
 https://docs.mesa3d.org/drivers/llvmpipe.html, consultada el 2026-10-01.
 
-**Cómo se comprueba:** el ejemplo de la fase 0 de `docs/ROADMAP.md` imprime esas líneas. No existe
-todavía.
+**Cómo se comprueba:** el ejemplo `arranque` de la fase 0 imprime esas líneas. Corrido el
+2026-10-02 sobre llvmpipe, con Vulkan y con GL: las dos veces imprimió la advertencia.
 
 El motor todavía no tiene interfaz, así que no hay reglas de iconos ni colores.
 
@@ -223,6 +230,7 @@ El motor todavía no tiene interfaz, así que no hay reglas de iconos ni colores
 - **El nivel base en macOS.** La tabla de wgpu 30.0.1 no marca ningún backend de macOS como
   "Downlevel/Best Effort": OpenGL ahí necesita ANGLE. Falta decidir si ese camino cuenta como nivel
   base.
-- **Los comandos que comprueban los principios 2 y 3.**
+- **El comando que comprueba el principio 3** comparando el estado de juego entre los dos niveles.
+- **El idioma de los identificadores del código.**
 - **Cómo se escriben los tests.**
 - **Dónde imprime el registro y con qué formato.**

@@ -5,6 +5,20 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.2 — 2026-10-02
+
+Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
+
+### Added
+- Fase 0: el proyecto Cargo `sloprush` con Rust 1.97.0 fijado, wgpu 30.0.1 y pollster 1.0.1 a
+  versión exacta, y su `Cargo.lock`.
+- Fase 0: el ejemplo `arranque`, que imprime los adaptadores, el elegido y su backend, y advierte
+  si dibuja por software.
+- Fase 0: `deny.toml`, los hooks de git de `.githooks/` y el linker para compilar hacia aarch64.
+
+### Removed
+- El hueco "Licencias del árbol de wgpu": `cargo deny check` pasó con el árbol de la fase 0.
+
 ## v0.1 — 2026-10-01
 
 Solo documentación. Corrige y completa la siembra del mismo día con los motivos de las decisiones y

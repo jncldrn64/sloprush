@@ -702,3 +702,84 @@ código, y de ninguna se leyó código.
   crates sin mantenimiento ni las versiones retiradas.
 
 **Estado:** `vigente`
+
+## 2026-10-02: Entran wgpu 30.0.1 y pollster 1.0.1
+
+**Contexto:** La fase 0 dibuja por wgpu (`docs/DESIGN.md`, "Toda la salida gráfica pasa por
+wgpu"). Las funciones de wgpu que piden adaptador y dispositivo devuelven futuros, y hay que
+esperarlos en el hilo que dibuja.
+
+**Decisión:** Entran como dependencias directas, con versión exacta en `Cargo.toml`:
+
+- wgpu 30.0.1, licencia `MIT OR Apache-2.0`. Primer release 2019-01-24, último 2026-08-22. Pide
+  Rust 1.87.
+- pollster 1.0.1, licencia `Apache-2.0/MIT`. Primer release 2020-04-07, último 2026-07-10. Espera
+  un futuro en el hilo actual con `pollster::block_on`.
+
+Las dos están en el escalón 1 y cumplen la regla 3 de `docs/DESIGN.md`, "Seguridad de las
+dependencias", según la API de crates.io consultada el 2026-10-02. Con ellas en el árbol,
+`cargo deny check` dio `advisories ok, bans ok, licenses ok, sources ok`, y `cargo audit` revisó
+126 crates sin avisos. unicode-ident 1.0.26 entra por naga, de wgpu, con su Unicode-3.0.
+
+**Alternativas:** Un `block_on` propio, del escalón 2. No hizo falta, porque pollster está en el
+escalón 1.
+
+**Estado:** `vigente`
+
+## 2026-10-02: El dispositivo se pide con los límites de WebGL2
+
+**Contexto:** `docs/DESIGN.md`, "Dos niveles gráficos", pide que toda capacidad del motor funcione
+en el nivel base.
+
+**Decisión:** `gpu::iniciar` pide el dispositivo con `Limits::downlevel_webgl2_defaults()`, los
+límites más bajos que define wgpu, y del adaptador toma solo el tamaño máximo de textura. No pide
+funciones opcionales. Así, lo que corre en Vulkan no usa nada que falte en el nivel base.
+
+**Alternativas:** `Limits::downlevel_defaults()`, que wgpu documenta para OpenGL y no para WebGL2.
+Se descartó porque el navegador está entre las plataformas del Backlog.
+
+**Estado:** `vigente`
+
+## 2026-10-02: cargo-deny revisa los dos objetivos Linux
+
+**Contexto:** Por defecto, cargo-deny revisa las dependencias de todos los objetivos, también las
+de Windows y macOS. Hoy el motor se comprueba solo en Linux (`docs/REQUIREMENTS.md`, sección 4).
+
+**Decisión:** `deny.toml` limita el grafo a `x86_64-unknown-linux-gnu` y
+`aarch64-unknown-linux-gnu`. Una plataforma que salga del Backlog suma su objetivo en el mismo PR.
+El 2026-10-02, el árbol sin ese filtro también dio `ok` en los cuatro chequeos.
+
+**Alternativas:** Revisar todos los objetivos. Se descartó porque un aviso sobre un crate de una
+plataforma que todavía no se compila frenaría una fase de Linux.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 0
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registran las fuentes leídas el 2026-10-02 para la fase 0. No se copió código.
+
+- Código y documentación publicados de wgpu 30.0.1 y wgpu-types 30.0.1, en el paquete que baja
+  `cargo fetch`, licencia `MIT OR Apache-2.0`. Se tomaron las firmas de `Instance::new`,
+  `InstanceDescriptor`, `enumerate_adapters`, `request_adapter`, `request_device`,
+  `DeviceDescriptor` y `Limits::downlevel_webgl2_defaults`.
+- pollster 1.0.1, en el mismo paquete, licencia `Apache-2.0/MIT`. Se tomó la firma de
+  `block_on`.
+- API de crates.io, https://crates.io/api/v1/crates/ más el nombre del crate. Se tomaron licencia y
+  fechas de wgpu, winit, pollster, bytemuck y raw-window-handle.
+- rustup, "Overrides", https://rust-lang.github.io/rustup/overrides.html. Se tomó la forma de
+  `rust-toolchain.toml`.
+- Cargo, "Configuration", https://doc.rust-lang.org/cargo/reference/config.html. Se tomó
+  la clave `linker` de `[target.aarch64-unknown-linux-gnu]`.
+- Git, "githooks", https://git-scm.com/docs/githooks. Se tomaron `pre-commit` y `core.hooksPath`.
+- cargo-deny, "config", https://embarkstudios.github.io/cargo-deny/checks/cfg.html. Se tomó el
+  campo `targets` de `[graph]`.
+- Debian, https://packages.debian.org/bookworm/arm64/ más el paquete. Se tomó que bookworm trae
+  libegl1, libegl-mesa0, libgl1-mesa-dri con `panfrost_dri.so`, mesa-vulkan-drivers, libgles2 y
+  cage para arm64, con Mesa 22.3.6.
+
+Salvo donde se dice, la licencia de cada página no se verificó.
+
+**Estado:** `vigente`

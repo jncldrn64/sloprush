@@ -42,7 +42,7 @@ prueba, con su motivo").
 
 ## Fase 0: Infraestructura
 
-**Estado:** `pendiente`
+**Estado:** `lista para verificación`
 
 **Objetivo:** dejar el proyecto Cargo listo y cerrar los huecos que bloquean todo lo demás.
 
@@ -68,6 +68,62 @@ software; en el de desarrollo, un adaptador de hardware. En el equipo de desarro
 **Bloquea:** fases 1, 2, 3 y 4.
 
 **Bloqueada por:** nada.
+
+**Corrida del agente, el 2026-10-02:** en un contenedor x86_64 sin GPU, con Ubuntu 24.04, Rust
+1.97.0 y los adaptadores por software de Mesa 25.2.8. `cargo run --example arranque` salió con
+código 0 con `--backend vulkan` (lavapipe) y con `--backend gl` (llvmpipe por EGL, sin pantalla), y
+las dos veces advirtió el renderizador por software. `cargo test` pasó 7 de 7, `cargo clippy` no dio
+advertencias, `cargo deny check` dio `advisories ok, bans ok, licenses ok, sources ok` y `cargo
+audit` revisó 126 crates sin avisos. El binario aarch64 pide como máximo `GLIBC_2.34`. Nada de esto
+corrió en los equipos del autor.
+
+**Para cerrarla, en el equipo de desarrollo:**
+
+```sh
+git clone https://github.com/jncldrn64/sloprush && cd sloprush
+git config core.hooksPath .githooks
+cargo run --example arranque -- --backend vulkan
+cargo run --example arranque -- --backend gl
+cargo test
+cargo install --locked cargo-deny@0.20.2 cargo-audit@0.22.2
+cargo deny check && cargo audit
+vulkaninfo --summary
+xrandr
+```
+
+Tiene que elegir la Radeon, sin la línea `[advertencia]`, en los dos backends. `vulkaninfo` y
+`xrandr` cierran los huecos "Vulkan en el equipo de desarrollo" y "Frecuencia del monitor del equipo
+de desarrollo".
+
+**Para llevar el binario al equipo mínimo,** desde el equipo de desarrollo:
+
+```sh
+sudo apt install gcc-aarch64-linux-gnu
+cargo build --release --target aarch64-unknown-linux-gnu --example arranque
+aarch64-linux-gnu-objdump -T target/aarch64-unknown-linux-gnu/release/examples/arranque \
+  | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1
+PI=usuario@direccion-de-la-orange-pi
+scp target/aarch64-unknown-linux-gnu/release/examples/arranque "$PI":
+```
+
+La versión de glibc que imprime `objdump` tiene que ser 2.36 o menor, la de bookworm.
+
+**Para cerrarla, en el equipo mínimo:**
+
+```sh
+lsmod | grep panfrost
+dmesg | grep -i -E "panfrost|mali"
+ls -l /dev/dri/
+ldd --version
+sudo apt install libegl1 libegl-mesa0 libgl1-mesa-dri
+./arranque --backend gl
+./arranque
+```
+
+Tiene que elegir la Mali con backend `Gl` y sin la línea `[advertencia]`. Si `/dev/dri/renderD128`
+no deja leer al usuario, falta agregarlo al grupo `render`. Esas corridas cierran los huecos
+"Panfrost en el equipo mínimo", "glibc de bookworm" y "wgpu sobre Panfrost". El hueco "Una ventana
+en el equipo mínimo" se cierra con el ejemplo `ventana`, con los comandos de la fase 1.
 
 ## Fase 1: Ventana y teclado
 
