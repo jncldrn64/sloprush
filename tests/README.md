@@ -24,3 +24,7 @@ dice cuál.
   aprietan dos teclas con xdotool, piden el cierre con `tests/cerrar_ventana.py` y revisan la
   salida. Piden Xvfb, xdotool y python3, y no corren con `cargo test`. Salen del criterio de
   aceptación de la fase 1.
+- Pruebas unitarias de `src/lienzo.rs` y `src/sprite.rs`: la tolerancia de color, el orden de los
+  píxeles leídos y el damero.
+- `tests/sprite.rs`: dibuja el sprite en un lienzo de 64 por 64 con GL y con Vulkan y comprueba el
+  fondo y las casillas del damero, píxel por píxel. Sale del criterio de aceptación de la fase 2.

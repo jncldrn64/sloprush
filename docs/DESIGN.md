@@ -63,8 +63,10 @@ wgpu".
 - sin marca de nivel: OpenGL en macOS, que necesita la capa ANGLE, y Vulkan en macOS, que necesita
   MoltenVK (sección 11).
 
-**Cómo se comprueba:** se corre el mismo ejemplo con la misma entrada en cada nivel y se compara
-el estado de juego. El comando no existe todavía (sección 11).
+**Cómo se comprueba:** se corre la misma escena con la misma entrada en cada nivel y se compara
+el resultado. `cargo test` corre las pruebas de arranque y de dibujo con GL y con Vulkan, y las
+dos dieron sí el 2026-10-02 sobre llvmpipe. Comparar el estado de juego entre niveles queda en la
+sección 11.
 
 ## 4. La simulación avanza a paso fijo de frecuencia configurable
 

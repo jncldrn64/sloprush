@@ -5,7 +5,9 @@
 
 pub mod dibujo;
 pub mod gpu;
+pub mod lienzo;
 pub mod registro;
+pub mod sprite;
 pub mod ventana;
 
 /// wgpu, en la versión exacta que fija `Cargo.toml`, para que los ejemplos y las pruebas usen la

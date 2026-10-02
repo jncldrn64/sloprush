@@ -841,3 +841,45 @@ cada consulta.
   Se tomó la forma `cage [--] aplicación [argumentos]`. Licencia de la página: no verificada.
 
 **Estado:** `vigente`
+
+## 2026-10-02: La textura del sprite se arma en el código
+
+**Contexto:** La fase 2 dibuja un sprite con textura. Leer una imagen de un archivo pide un
+decodificador de formato, que sería una dependencia más.
+
+**Decisión:** La textura es un damero de 4 por 4 en dos colores, armado en `sprite::damero`. No
+entra ninguna dependencia para la fase 2.
+
+**Alternativas:** Un crate que decodifique PNG. Se dejó afuera porque el mínimo viable pide un
+sprite y no la carga de imágenes, que no tiene fase.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Las pruebas de dibujo leen un lienzo fuera de pantalla
+
+**Contexto:** El criterio de las fases 2 y 3 pide un sí o un no sin mirar la pantalla, y el pedido
+de la sesión del 2026-10-02 pide comprobar lo dibujado leyendo el cuadro de vuelta.
+
+**Decisión:** Las pruebas dibujan la escena en un `Lienzo`, una textura que se copia a memoria, y
+comparan píxeles elegidos con su color esperado, con tolerancia de 2 por canal. Corren sin ventana,
+en GL y en Vulkan, con el mismo código que dibuja en la ventana. Los ejemplos, en el modo de cuadros
+fijos, prueban la ventana y la superficie.
+
+**Alternativas:** Leer la textura de la superficie de la ventana. Se descartó porque ata la prueba a
+una ventana abierta.
+
+**Estado:** `vigente`
+
+## 2026-10-02: Fuentes consultadas en la fase 2
+
+**Contexto:** La entrada "No se copia código de proyectos externos, con su motivo" pide registrar
+cada consulta.
+
+**Decisión:** Se registra la fuente leída el 2026-10-02 para la fase 2. No se copió código.
+
+- Código publicado de wgpu 30.0.1 y wgpu-types 30.0.1, licencia `MIT OR Apache-2.0`. Se tomaron
+  `RenderPipelineDescriptor`, `VertexState`, `FragmentState`, `TexelCopyTextureInfo`,
+  `TexelCopyBufferInfo`, `TexelCopyBufferLayout`, `COPY_BYTES_PER_ROW_ALIGNMENT`,
+  `Buffer::map_async`, `Buffer::get_mapped_range` y `PollType::wait_indefinitely`.
+
+**Estado:** `vigente`

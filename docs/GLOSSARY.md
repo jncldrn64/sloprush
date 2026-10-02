@@ -71,6 +71,9 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
   licencias para las dependencias".
 - **modo de cuadros fijos**: la corrida de un ejemplo con `--cuadros N`, que dibuja N cuadros y
   termina con código 0. Da sí o no sin mirar la pantalla. Fuente: CHANGELOG, v0.2.
+- **lienzo**: una textura fuera de pantalla donde se dibuja un cuadro para leer sus píxeles de
+  vuelta. Es como prueban las fases 2 y 3 lo que se dibuja. Fuente: 2026-10-02 "Las pruebas de
+  dibujo leen un lienzo fuera de pantalla".
 - **mínimo viable**: una ventana, un sprite 2D, un cubo 3D con cámara, entrada de teclado y gravedad
   sobre el cubo, y nada más. Todavía no existe. Fuente: 2026-10-01 "Alcance del mínimo viable, con
   su motivo".
@@ -92,3 +95,5 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
 - **script**: una función documentada que extiende el motor sin ser nativa, al estilo MTA de A11 en
   `docs/REQUIREMENTS.md`. Todavía no existe, y su lenguaje no está elegido. Fuente: 2026-10-01
   "Nativo contra script, con su motivo".
+- **sprite**: un rectángulo 2D con una textura. Hoy, el damero de `src/sprite.rs`. Fuente:
+  2026-10-02 "La textura del sprite se arma en el código".

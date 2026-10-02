@@ -35,6 +35,7 @@ Comprobado el 2026-10-02 contra `git ls-files`.
 - `docs/TEMPORARY-CONTEXT.md`: lo que se perdería si no se anota.
 - `examples/arranque.rs`: el ejemplo de la fase 0. Arranca la GPU, imprime los adaptadores, el
   elegido y su backend, y cierra.
+- `examples/sprite.rs`: el ejemplo de la fase 2. Dibuja el sprite en el centro de la ventana.
 - `examples/ventana.rs`: el ejemplo de la fase 1. Abre una ventana, la limpia en cada cuadro e
   imprime cada tecla.
 - `rust-toolchain.toml`: fija Rust 1.97.0, con rustfmt, clippy y el objetivo
@@ -42,14 +43,20 @@ Comprobado el 2026-10-02 contra `git ls-files`.
 - `src/dibujo.rs`: pasos de dibujo compartidos. Hoy, `limpiar`.
 - `src/gpu.rs`: el arranque de wgpu. `crear_instancia`, `listar_adaptadores`, `iniciar` y
   `es_por_software`, y la elección de backend, `Eleccion` y `separar_backend`.
-- `src/lib.rs`: la raíz del crate. Expone `dibujo`, `gpu`, `registro`, `ventana`, `wgpu` y
-  `VERSION`.
+- `src/lib.rs`: la raíz del crate. Expone los módulos `dibujo`, `gpu`, `lienzo`, `registro`,
+  `sprite` y `ventana`, y `wgpu` y `VERSION`.
+- `src/lienzo.rs`: `Lienzo`, una textura fuera de pantalla que `leer` copia a memoria, y las
+  funciones `pixel` y `parecido` para las pruebas.
 - `src/registro.rs`: `arranque`, `carga`, `cierre`, `entrada`, `advertencia`, `resultado` y
   `error`.
+- `src/sprite.rs`: `Sprite`, que carga el sombreador, la textura de damero y el pipeline, y
+  `ubicar` y `dibujar`.
+- `src/sprite.wgsl`: el sombreador del sprite, en WGSL.
 - `src/ventana.rs`: la ventana con winit. `Opciones`, el rasgo `Escena` y `correr`, que abre la
   ventana, conecta la superficie de wgpu y dibuja la escena cuadro a cuadro.
 - `tests/README.md`: cómo se corren las pruebas.
 - `tests/arranque.rs`: las pruebas de la fase 0.
+- `tests/sprite.rs`: las pruebas de la fase 2, que leen el lienzo de vuelta.
 - `tests/cerrar_ventana.py`: pide el cierre de una ventana X11 como un gestor de ventanas.
 - `tests/ventana.sh`: la prueba de la fase 1, dentro de un Xvfb.
 
@@ -66,6 +73,9 @@ Comprobado el 2026-10-02 contra el código.
 | Opciones con ventana | `Opciones::desde_args`: `--cuadros`, `--limite-fps` | `src/ventana.rs` |
 | Modo de presentación | `AutoVsync`, o `AutoNoVsync` con `--limite-fps` | `src/ventana.rs` |
 | Tamaño inicial de la ventana | 640 por 480, en `App::abrir` | `src/ventana.rs` |
+| Colores y tamaño del damero | `COLOR_A`, `COLOR_B`, `LADO` | `src/sprite.rs` |
+| Posición del sprite | `ubicar`, en coordenadas de recorte | `src/sprite.rs` |
+| Alineación de la lectura | `COPY_BYTES_PER_ROW_ALIGNMENT`, en `Lienzo::leer` | `src/lienzo.rs` |
 | Formato del registro | `[etapa] mensaje` en stdout; `[error]` en stderr | `src/registro.rs` |
 | Versión de Rust | `channel` | `rust-toolchain.toml` |
 | Linker de aarch64 | `linker` | `.cargo/config.toml` |
@@ -80,12 +90,16 @@ Comprobado el 2026-10-02 contra el código.
   `~/.cargo/advisory-dbs` y `~/.cargo/advisory-db`. Cada corrida las actualiza.
 - La GPU: `iniciar` crea instancia, adaptador, dispositivo y cola dentro de `Gpu`, y se liberan al
   soltar ese valor.
+- El sprite: su textura de damero, su muestreador, su buffer uniforme y su pipeline viven dentro de
+  `Sprite`, y se liberan con él.
+- El lienzo: su textura vive dentro de `Lienzo`; `leer` crea un buffer de lectura que se libera
+  al terminar.
 - La ventana y su superficie: las crea `App::abrir` al arrancar el bucle de eventos, y se liberan
   en `exiting`, al terminar.
 
 ## 4. Tamaño
 
-Comprobado el 2026-10-02: 766 líneas de Rust, contadas con
+Comprobado el 2026-10-02: 1261 líneas de Rust, contadas con
 `wc -l src/*.rs examples/*.rs tests/*.rs | tail -1`.
 
 ## 5. Sin describir todavía

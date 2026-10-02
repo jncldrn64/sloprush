@@ -182,7 +182,7 @@ línea `[entrada] tecla` por cada tecla. Eso cierra el hueco "Una ventana en el 
 
 ## Fase 2: Sprite 2D
 
-**Estado:** `pendiente`
+**Estado:** `lista para verificación`
 
 **Objetivo:** dibujar un sprite 2D.
 
@@ -197,6 +197,34 @@ o no sin mirar la pantalla. Que el sprite se vea en la ventana lo comprueba el a
 **Bloquea:** nada.
 
 **Bloqueada por:** fase 1.
+
+**Corrida del agente, el 2026-10-02:** en el mismo contenedor, sobre llvmpipe. `cargo test --test
+sprite` dibujó el sprite en un lienzo de 64 por 64 sin ventana, con GL y con Vulkan, y leyó los
+píxeles de vuelta con el fondo negro en las esquinas y cada casilla del damero en su lugar. Con el
+sprite corrido un cuarto de pantalla, la prueba falla.
+
+Dentro de un Xvfb, el ejemplo `sprite` con `--cuadros 30` salió con código 0 en los dos backends, y
+advirtió el renderizador por software, como corresponde a llvmpipe.
+
+**Para cerrarla, en el equipo de desarrollo:**
+
+```sh
+cargo test --test sprite
+cargo run --example sprite -- --backend vulkan --cuadros 300; echo $?
+cargo run --example sprite -- --backend gl --cuadros 300; echo $?
+```
+
+Cada `echo $?` tiene que dar 0, sin líneas `[advertencia]`. A la vista: un cuadrado con damero
+naranja y crema en el centro de una ventana azul oscura.
+
+**Para cerrarla, en el equipo mínimo,** con el binario llevado como en la fase 1, cambiando
+`ventana` por `sprite`:
+
+```sh
+cage -- ./sprite --backend gl --cuadros 300 > sprite.log; echo $?; grep -c advertencia sprite.log
+```
+
+`echo $?` tiene que dar 0 y `grep -c` tiene que dar 0. A la vista, el mismo damero.
 
 ## Fase 3: Cubo 3D con cámara
 

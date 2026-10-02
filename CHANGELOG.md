@@ -18,6 +18,8 @@ Primera versión con código. La versión que muestra el motor pasa a 0.2.0.
 - Fase 1: winit 0.30.13 a versión exacta, y el ejemplo `ventana`, que abre una ventana, imprime cada
   tecla y termina con código 0 al cerrarla o tras `--cuadros N`.
 - Fase 1: `tests/ventana.sh`, que prueba la ventana dentro de un Xvfb sin mirar la pantalla.
+- Fase 2: el sprite 2D con textura de damero, el ejemplo `sprite` y `tests/sprite.rs`, que dibuja
+  en un lienzo fuera de pantalla y lee los píxeles de vuelta en GL y en Vulkan.
 
 ### Changed
 - `CLAUDE.md`, sección 9: las citas textuales del autor no cuentan para las reglas 1 y 2 de
