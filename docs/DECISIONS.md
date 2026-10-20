@@ -1068,3 +1068,27 @@ sección 12, y sus cuatro citas internas cambian de número.
 
 **Estado:** `vigente`
 
+
+## 2026-10-20: La forma de cada entrada queda escrita
+
+**Contexto:** Una revisión de los documentos, el 2026-10-20, encontró formas que el repo sigue sin
+que ninguna regla las nombre. 48 de las 49 decisiones de fondo llevan **Alternativas:**, y las 17
+que reemplazan a otra abren su **Contexto:** con `Reemplaza a`. Los nueve huecos conocidos abren
+con su fecha y un título en negrita. En el CHANGELOG, las secciones ordenan sus subsecciones igual,
+y las cuatro de documentación abren con `Solo documentación.`.
+
+La decisión que no lleva alternativas es la del 2026-10-20 "Los comentarios tienen dos reglas, en
+DESIGN.md". Se escribió en una sesión que trabajaba sobre tres repos, y en los otros dos el campo no
+existe. Acá nada lo pedía por escrito.
+
+**Decisión:** `CLAUDE.md` escribe cada forma donde ya está su regla. La sección 5 nombra los campos
+de una decisión, qué entradas no llevan alternativas, cómo se nombra la que se reemplaza y cómo abre
+un hueco. La sección 6 fija el orden de las subsecciones y la apertura de una sección de
+documentación. Ninguna entrada escrita cambia: la de los comentarios queda como la única decisión
+sin alternativas, y esta entrada es su registro.
+
+**Alternativas:** Dejar las formas sin escribir, como hasta hoy, que es justo lo que dejó perder el
+campo. Escribirlas en el bloque de cita de cada archivo las repartiría en cuatro lugares, cuando
+`CLAUDE.md` ya tiene una sección para cada una.
+
+**Estado:** `vigente`

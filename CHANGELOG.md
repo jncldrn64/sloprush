@@ -5,6 +5,22 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.5 — 2026-10-20
+
+Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
+próximo PR de código.
+
+### Added
+- `docs/DECISIONS.md`: "La forma de cada entrada queda escrita", con lo que se contó de cada forma y
+  la decisión del 2026-10-20 que quedó sin alternativas.
+
+### Changed
+- `CLAUDE.md`, sección 5: una decisión lleva **Contexto:**, **Decisión:**, **Alternativas:** y
+  **Estado:**, y la que reemplaza a otra la nombra al abrir su contexto. Un hueco abre con su fecha
+  y un título en negrita.
+- `CLAUDE.md`, sección 6: las subsecciones del CHANGELOG van en el orden Added, Changed, Fixed,
+  Removed, y una sección de documentación abre con `Solo documentación.`.
+
 ## v0.4 — 2026-10-20
 
 Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
