@@ -1049,3 +1049,22 @@ volvió a leer el agente el 2026-10-02.
   Licencia de la página: no verificada.
 
 **Estado:** `vigente`
+
+## 2026-10-20: Los comentarios tienen dos reglas, en DESIGN.md
+
+**Contexto:** `CLAUDE.md`, sección 9, le daba a los comentarios su idioma y su voz, y no decía
+para qué sirve uno ni cuándo cambia. El 2026-10-20 el autor comparó varios de sus scripts de bash
+con TL-FCCU, y el hábito que se repetía era el mismo: la línea que evita un fallo trae un
+comentario que lo nombra.
+
+Antes de elegir el archivo pidió ver este repo y otro más. Acá las convenciones del código viven
+en `docs/DESIGN.md` y en ningún otro lado (`CLAUDE.md`, sección 2). La respuesta del autor:
+
+- "vale si van a DESIGN.md, entonces hazlo en todos los respo, bajo sus lineamientos"
+
+**Decisión:** el principio 11 de `docs/DESIGN.md` tiene las dos reglas, y ninguna herramienta las
+revisa, porque son reglas para quien edita el código. "Sin escribir todavía" pasa a ser la
+sección 12, y sus cuatro citas internas cambian de número.
+
+**Estado:** `vigente`
+

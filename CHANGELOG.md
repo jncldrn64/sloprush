@@ -5,6 +5,19 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.3 — 2026-10-20
+
+Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
+próximo PR de código.
+
+### Added
+- `docs/DESIGN.md`, principio 11: un comentario que protege una línea dice qué se rompe sin ella,
+  y un comentario que afirma algo del código cambia en el mismo commit que ese código.
+- `docs/DECISIONS.md` dice por qué, con la cita del autor.
+
+### Changed
+- "Sin escribir todavía" pasa a ser la sección 12 de `docs/DESIGN.md`, con sus citas internas.
+
 ## v0.2 — 2026-10-02
 
 Primera versión con código. La versión que muestra el motor pasa a 0.2.0.

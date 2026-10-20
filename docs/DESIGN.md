@@ -9,7 +9,7 @@
 Un cambio que rompe un principio de acá se rechaza, lo haya escrito una persona o un modelo. Ante la
 duda, se copia la forma del código que ya existe en vez de inventar un idioma nuevo.
 
-Cada principio dice cómo se comprueba, y lo que todavía no se puede comprobar está en la sección 11.
+Cada principio dice cómo se comprueba, y lo que todavía no se puede comprobar está en la sección 12.
 Qué código existe está en `docs/ARCHITECTURE.md`.
 
 ## 1. Rust estable
@@ -61,7 +61,7 @@ wgpu".
 - nivel completo: Vulkan en Windows y Linux, Metal en macOS, DirectX 12 en Windows, WebGPU en la
   web;
 - sin marca de nivel: OpenGL en macOS, que necesita la capa ANGLE, y Vulkan en macOS, que necesita
-  MoltenVK (sección 11).
+  MoltenVK (sección 12).
 
 **Cómo se comprueba:** se corre la misma escena con la misma entrada en cada nivel y se compara
 el resultado. `cargo test` corre las pruebas de arranque y de dibujo con GL y con Vulkan, y
@@ -113,7 +113,7 @@ conversación de diseño, aceptada por el autor, para que lo nativo crezca solo 
 Decisión: `docs/DECISIONS.md`, 2026-10-01 "Nativo contra script, con su motivo".
 
 **Cómo se comprueba:** hoy no se puede. No hay lenguaje de script, así que todo el mínimo viable es
-nativo, y "muchos objetos" no tiene número (sección 11).
+nativo, y "muchos objetos" no tiene número (sección 12).
 
 ## 6. Licencias de las dependencias
 
@@ -215,7 +215,7 @@ y `sources ok`, con `ignore` vacío, y la regla 3 dio 2020-04-07 y 2026-07-10 pa
 
 ## 9. Los tests
 
-Cómo se escriben los tests está en la sección 11. Una suite que alguna vez falló de forma
+Cómo se escriben los tests está en la sección 12. Una suite que alguna vez falló de forma
 intermitente se corre N veces, no una, y se queda en esa lista después del arreglo. Qué suites hay
 y cómo se corren está en `tests/README.md`.
 
@@ -238,7 +238,27 @@ https://docs.mesa3d.org/drivers/llvmpipe.html, consultada el 2026-10-01.
 
 El motor todavía no tiene interfaz, así que no hay reglas de iconos ni colores.
 
-## 11. Sin escribir todavía
+## 11. Los comentarios
+
+**Regla:** un comentario que protege una línea dice qué se rompe sin ella, para que nadie la
+borre sin reproducir ese fallo antes. Un comentario que afirma algo del código es una afirmación
+como cualquier otra, y cambia en el mismo commit que el código que describe.
+
+**Por qué:** el comentario de `src/ventana.rs` sobre `CurrentSurfaceTexture::Lost` explica por
+qué la superficie vieja se suelta antes de configurar la nueva, porque con EGL una ventana admite
+una sola superficie. Sin esa frase, la línea parece un orden cualquiera y se puede invertir.
+
+La segunda regla viene de TL-FCCU, otro repo del autor, donde un comentario afirmó durante meses
+lo contrario de lo que hacía el código de abajo. El autor pidió las dos para todos sus repos el
+2026-10-20, y la decisión es `docs/DECISIONS.md`, 2026-10-20 "Los comentarios tienen dos reglas,
+en DESIGN.md".
+
+**Dónde está escrito:** el idioma y la voz de un comentario están en `CLAUDE.md`, sección 9.
+
+**Cómo se comprueba:** a mano, en cada PR que toca código. Quien cambia una línea lee los
+comentarios que tiene encima, porque ninguna herramienta los revisa.
+
+## 12. Sin escribir todavía
 
 - **Físicas propias o delegadas a un crate para detectar colisiones.** Sin decidir. La gravedad de
   la fase 4 usa un integrador propio, a confirmar por el autor (`docs/DECISIONS.md`, 2026-10-02
