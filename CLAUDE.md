@@ -92,11 +92,16 @@ entero:
 
 ## 5. Decisiones, huecos y contexto temporal
 
-- **Una decisión va en `docs/DECISIONS.md`**, append-only, una entrada por decisión. Una nueva
-  reemplaza a una vieja nombrándola por fecha y título.
+- **Una decisión va en `docs/DECISIONS.md`**, append-only, una entrada por decisión. Lleva
+  **Contexto:**, **Decisión:**, **Alternativas:** y **Estado:**, con el estado entre acentos graves.
+  Las alternativas dicen qué más se pesó, y si no se sabe dicen `**Sin origen recuperable.**`. La
+  entrada que adopta la plantilla y las que solo registran, como las fuentes consultadas o las ideas
+  descartadas, no llevan alternativas.
+- **Una nueva reemplaza a una vieja nombrándola** al abrir su **Contexto:**, con
+  `Reemplaza a AAAA-MM-DD "título"`. La vieja no se edita y sigue diciendo `vigente`.
 - **Un hueco abierto va en la sección "Huecos conocidos" de `docs/ARCHITECTURE.md`**, fechado y con
-  el comando o la corrida que lo muestra. Se borra en el PR que lo cierra; el CHANGELOG guarda el
-  rastro.
+  el comando o la corrida que lo muestra, en una viñeta que abre con `**AAAA-MM-DD: Título.**`. Se
+  borra en el PR que lo cierra; el CHANGELOG guarda el rastro.
 - **Un puntero a una decisión** se agrega donde una línea se leería arbitraria o contradictoria sin
   él, y cita fecha y título.
 - **Una decisión que introduce o refina un término** escribe su línea en `docs/GLOSSARY.md` en el
@@ -108,9 +113,10 @@ entero:
 
 - [Keep a Changelog](https://keepachangelog.com). Un solo archivo que crece por secciones, lo más
   nuevo arriba. Cada sección abre con `## vX.Y — AAAA-MM-DD` y lleva `### Added`, `### Changed`,
-  `### Fixed` o `### Removed`.
-- **Un PR solo de documentación abre su propia sección fechada** y no sube la versión. Una sección
-  publicada es historia y no se reescribe.
+  `### Fixed` o `### Removed`, en ese orden.
+- **Un PR solo de documentación abre su propia sección fechada** y no sube la versión. La sección
+  abre con `Solo documentación.` y, desde que hay código, dice qué versión sigue mostrando el
+  motor. Una sección publicada es historia y no se reescribe.
 - **La versión que muestra el programa es la última del CHANGELOG.** Se sube en el PR de código que
   la amerita. Un PR doc-only puede dejar el CHANGELOG adelante; ese desfase lo cierra el próximo PR
   de código.
