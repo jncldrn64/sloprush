@@ -5,6 +5,15 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.4 — 2026-10-20
+
+Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
+próximo PR de código.
+
+### Added
+- `docs/TEMPORARY-CONTEXT.md` anota que la advertencia de llvmpipe sale por la salida estándar
+  junto con las líneas `[resultado]`, como pregunta para cuando se decida dónde imprime el registro.
+
 ## v0.3 — 2026-10-20
 
 Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el

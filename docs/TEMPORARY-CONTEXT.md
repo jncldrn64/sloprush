@@ -77,3 +77,9 @@ y uno grande sí.
 - 2026-10-01, agente de la corrección de la siembra: el pedido nombraba `relevo-sloprush.md` y
   mandaba valorar su Propuesta 2. El archivo no estaba en el repo, ni en GitHub, ni en la sesión,
   así que la Propuesta 2 quedó sin valorar. Importa porque el autor pidió la valoración.
+- 2026-10-20, Claude, al comparar los scripts de bash del autor con TL-FCCU: `src/registro.rs` manda
+  todo a la salida estándar salvo `[error]`, y su comentario de módulo dice que es a propósito, para
+  leer y comparar una corrida. Por eso la advertencia de llvmpipe de `src/gpu.rs` sale mezclada con
+  las líneas `[resultado]` que un ejemplo imprime para comparar. No es un defecto hoy. Puede
+  importar cuando se escriba "Dónde imprime el registro y con qué formato", que sigue en
+  `docs/DESIGN.md`, "Sin escribir todavía": una advertencia, ¿es dato de la corrida o diagnóstico?
