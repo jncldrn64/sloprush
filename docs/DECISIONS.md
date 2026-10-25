@@ -1146,3 +1146,21 @@ CHANGELOG. `CLAUDE.md`, sección 7, lo dice.
 reescribiera mensajes podía borrarlas sin romper ninguna regla.
 
 **Estado:** `vigente`
+
+## 2026-10-25: El piso mide los `.md`, y los comentarios se revisan a mano
+
+**Contexto:** `CLAUDE.md`, sección 9, aplica las reglas de prosa a "docs y comentarios", y el
+corpus de sus comandos son solo los `.md`. Nada decía qué pasa con los comentarios, que el
+2026-10-25 suman 212 líneas en 21 archivos `.rs`
+(`git ls-files '*.rs' | xargs grep -hcE '^\s*//' | paste -sd+ | bc`). Ningún comando los midió
+nunca.
+
+**Decisión:** `CLAUDE.md`, sección 9, dice que el piso mide los `.md` y que los comentarios se
+revisan a mano, con las dos reglas de `docs/DESIGN.md`, "Los comentarios". Escribe lo que ya
+pasaba.
+
+**Alternativas:** Medir los comentarios con los mismos comandos. Sumaría una línea base que
+mantener, y las reglas que más importan en un comentario, que nombre el fallo que protege y que
+cambie con su código, no las cuenta ningún grep.
+
+**Estado:** `vigente`
