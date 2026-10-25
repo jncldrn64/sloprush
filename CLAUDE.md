@@ -33,7 +33,6 @@ documento. El tipo va en la primera línea del bloque de cita de cada archivo, d
 | Historia | `DECISIONS.md`, `CHANGELOG.md` | No compite: registra. Una decisión vigente sí gana sobre un normativo viejo |
 | Plan | `ROADMAP.md` | No compite: ordena el trabajo |
 | Tránsito | `TEMPORARY-CONTEXT.md` | Nunca manda |
-| Puerta | `AGENTS.md` | Nunca manda: apunta |
 
 Las reglas:
 
@@ -49,7 +48,7 @@ Las reglas:
    se corrige en el PR que lo encuentra. Una entrada reemplazada no gana nada, y entre dos
    decisiones manda la más nueva, que nombra a la que reemplaza.
 5. **`ROADMAP.md` no cambia una norma.** Una fase que necesita otra norma la cambia por la regla 2.
-6. **`TEMPORARY-CONTEXT.md` y `AGENTS.md` no mandan nunca.**
+6. **`TEMPORARY-CONTEXT.md` no manda nunca.**
 
 **Las convenciones del código del producto viven en `docs/DESIGN.md` y en ningún otro lado**, ni
 siquiera acá. Este archivo dice cómo se trabaja; `DESIGN.md` dice cómo se escribe el código. Mezclar
@@ -58,7 +57,7 @@ los dos fue la discrepancia que esta plantilla corrige.
 ## 3. Documentación
 
 Los documentos canónicos son los de la tabla de la sección 2, más `CHANGELOG.md`. En la raíz:
-`AGENTS.md`, `CLAUDE.md` y `CHANGELOG.md`. El resto en `docs/`, y un módulo con documentación propia
+`CLAUDE.md` y `CHANGELOG.md`. El resto en `docs/`, y un módulo con documentación propia
 en `docs/<módulo>/`, con un par: un estándar normativo y una superficie descriptiva.
 
 - **No se crea un documento nuevo sin preguntar al autor.** La excepción es un `README.md` de
@@ -114,9 +113,10 @@ entero:
 - [Keep a Changelog](https://keepachangelog.com). Un solo archivo que crece por secciones, lo más
   nuevo arriba. Cada sección abre con `## vX.Y — AAAA-MM-DD` y lleva `### Added`, `### Changed`,
   `### Fixed` o `### Removed`, en ese orden.
-- **Un PR solo de documentación abre su propia sección fechada** y no sube la versión. La sección
-  abre con `Solo documentación.` y, desde que hay código, dice qué versión sigue mostrando el
-  motor. Una sección publicada es historia y no se reescribe.
+- **Un PR solo de documentación abre su propia sección fechada, con la versión siguiente del
+  CHANGELOG,** y no toca la versión que muestra el motor. La sección abre con
+  `Solo documentación.` y, desde que hay código, dice qué versión sigue mostrando el motor. Una
+  sección publicada es historia y no se reescribe.
 - **La versión que muestra el programa es la última del CHANGELOG.** Se sube en el PR de código que
   la amerita. Un PR doc-only puede dejar el CHANGELOG adelante; ese desfase lo cierra el próximo PR
   de código.
@@ -127,6 +127,8 @@ entero:
   es capacidad nueva, `chg` cambio de comportamiento, `fix` corrección, `rmv` algo que se saca,
   `doc` solo documentación. El cuerpo no vuelve a narrar el cambio: una o dos líneas y la sección
   del CHANGELOG.
+- **El commit conserva su trailer:** las líneas `Co-Authored-By` y `Claude-Session` que agrega la
+  herramienta van al final del mensaje, después de la referencia al CHANGELOG.
 - **Título del PR:** el mismo formato y el mismo tipo que el commit.
 - **Cuerpo del PR:** la tabla de archivos se copia de `git diff --numstat origin/main...HEAD`,
   corrido como último paso antes de escribirla.

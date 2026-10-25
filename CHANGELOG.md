@@ -5,6 +5,24 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.6 — 2026-10-25
+
+Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
+próximo PR de código.
+
+### Added
+- `docs/DECISIONS.md`: "AGENTS.md es una isla que CLAUDE.md no nombra", "La sección de un PR
+  doc-only lleva la versión siguiente" y "El commit conserva su trailer".
+
+### Changed
+- `AGENTS.md` queda en dos oraciones que mandan a `CLAUDE.md`, sin bloque de cita.
+- `CLAUDE.md` deja de nombrar `AGENTS.md` en la tabla de tipos, en la regla 6 y en la lista de la
+  raíz.
+- `CLAUDE.md`, sección 6: la sección de un PR doc-only lleva la versión siguiente del CHANGELOG.
+  Sección 7: el commit conserva sus líneas `Co-Authored-By` y `Claude-Session`.
+- `docs/GLOSSARY.md` corrige "PR doc-only", y `docs/ARCHITECTURE.md` describe el `AGENTS.md`
+  nuevo.
+
 ## v0.5 — 2026-10-20
 
 Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el

@@ -1092,3 +1092,57 @@ campo. Escribirlas en el bloque de cita de cada archivo las repartiría en cuatr
 `CLAUDE.md` ya tiene una sección para cada una.
 
 **Estado:** `vigente`
+
+## 2026-10-25: AGENTS.md es una isla que CLAUDE.md no nombra
+
+**Contexto:** Reemplaza a 2026-10-01 "Se adopta la plantilla 1.0" en lo que dice de `AGENTS.md`.
+La plantilla lo trajo como documento canónico de tipo puerta, con su bloque de cita, y `CLAUDE.md`
+lo nombraba en tres lugares. El autor dijo el 2026-10-25 para qué sirve, con sus palabras sin
+corregir:
+
+- "agents.mi deberia ser una entrada barata y bastardizada, una isla para cuando el agente que
+  este leyendo comienze por ese archivo y no sepa por donde ir, pero si el modelo lee claude.md
+  realmente no es necesario que ni sepa ra existencia de agents.md"
+
+**Decisión:** `AGENTS.md` queda en dos oraciones que mandan a `CLAUDE.md`, sin bloque de cita. Sale
+de la tabla de tipos, de la regla 6 de la jerarquía y de la lista de documentos de la raíz. El piso
+de prosa lo sigue midiendo, porque su corpus son todos los `.md` versionados y no hace falta
+nombrarlo.
+
+**Alternativas:** Dejarlo como puerta con su bloque, que es lo que el autor señaló como error de la
+plantilla. Sacarlo también del corpus del piso obligaría a nombrarlo en el comando, justo lo que
+esta decisión evita.
+
+**Estado:** `vigente`
+
+## 2026-10-25: La sección de un PR doc-only lleva la versión siguiente
+
+**Contexto:** `CLAUDE.md`, sección 6, decía que un PR solo de documentación "no sube la versión", y
+dos líneas más abajo, que puede dejar el CHANGELOG adelante de la versión que muestra el motor. Las
+dos frases chocaban. El 2026-10-01 la segunda siembra se leyó con la primera, y el CHANGELOG quedó
+con dos secciones `v0.1`. Un repo sembrado con la misma plantilla repitió `v0.1` en siete secciones.
+
+**Decisión:** La sección de un PR doc-only lleva la versión siguiente del CHANGELOG, y lo que no se
+toca es la versión que muestra el motor. Las dos secciones `v0.1` quedan como están, porque una
+sección publicada no se reescribe.
+
+**Alternativas:** Numerar las secciones de documentación con un tercer segmento, como `v0.4.1`.
+Lo pensado para el motor no cambiaría, pero suma una forma de versión que ningún otro repo del
+autor usa.
+
+**Estado:** `vigente`
+
+## 2026-10-25: El commit conserva su trailer
+
+**Contexto:** La herramienta cierra cada commit con dos líneas, `Co-Authored-By` y
+`Claude-Session`, que nombran al coautor y la sesión. Todos los commits del repo hechos desde una
+sesión las llevan, y nada en `CLAUDE.md` decía si se quedan. El 2026-10-25 el autor eligió
+escribirlo en sus repos.
+
+**Decisión:** El commit conserva esas dos líneas al final del mensaje, después de la referencia al
+CHANGELOG. `CLAUDE.md`, sección 7, lo dice.
+
+**Alternativas:** Dejarlo sin escribir, como estaba. La práctica no cambiaba, pero una sesión que
+reescribiera mensajes podía borrarlas sin romper ninguna regla.
+
+**Estado:** `vigente`

@@ -36,8 +36,9 @@ Fuente de las líneas de este grupo que no citan otra: 2026-10-01 "Se adopta la 
   lista para verificación, con su motivo".
 - **normativo**: el documento que dice qué tiene que ser. Si el código lo contradice, el código
   está en falta.
-- **PR doc-only**: un PR que no toca código ni tests. Abre su propia sección del CHANGELOG y no sube
-  la versión.
+- **PR doc-only**: un PR que no toca código ni tests. Abre su propia sección del CHANGELOG, con la
+  versión siguiente, y no toca la versión que muestra el motor. Fuente: 2026-10-25 "La sección de
+  un PR doc-only lleva la versión siguiente".
 - **terna plana**: tres oraciones seguidas cuyos largos caen dentro de 3 palabras. La unidad de la
   regla 8 de prosa.
 - **tipo**: la palabra que abre un commit o el título de un PR: `add`, `chg`, `fix`, `rmv` o `doc`.

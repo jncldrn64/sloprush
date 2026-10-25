@@ -18,7 +18,8 @@ Comprobado el 2026-10-02 contra `git ls-files`.
   de cada commit. Se activa con `git config core.hooksPath .githooks`.
 - `.githooks/pre-push`: `cargo deny check` y `cargo audit` antes de cada push.
 - `.gitignore`: deja afuera `target/`.
-- `AGENTS.md`: la puerta para las herramientas que buscan ese nombre. Apunta a `CLAUDE.md`.
+- `AGENTS.md`: dos oraciones que mandan a `CLAUDE.md` a quien abre ese archivo primero. No es
+  uno de los documentos, y nada depende de él.
 - `CHANGELOG.md`: qué cambió y cuándo.
 - `CLAUDE.md`: el método de trabajo, la jerarquía de los documentos y el piso de prosa.
 - `Cargo.lock`: la versión de cada crate del árbol.
