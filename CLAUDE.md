@@ -201,6 +201,10 @@ propia que abre con comillas, o con su etiqueta, como `**A13.**`, y comillas. El
 dos reglas la deja en blanco junto con sus líneas de continuación. Decisión: 2026-10-02 "Las citas
 textuales del autor no cuentan para las reglas 1 y 2".
 
+**El piso mide los `.md`.** Los comentarios del código siguen las mismas reglas y se revisan a mano,
+con las dos de `docs/DESIGN.md`, "Los comentarios". Decisión: 2026-10-25 "El piso mide los `.md`, y
+los comentarios se revisan a mano".
+
 El corpus son todos los `.md` versionados menos este archivo, que movería sus propios números, y
 `docs/TEMPORARY-CONTEXT.md`, exento por diseño. Los comandos, desde la raíz:
 

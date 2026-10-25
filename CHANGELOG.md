@@ -5,6 +5,16 @@
 > `## vX.Y — AAAA-MM-DD`. **Origen:** plantilla 1.0, sembrada el 2026-10-01 (`docs/DECISIONS.md`,
 > 2026-10-01 "Se adopta la plantilla 1.0").
 
+## v0.7 — 2026-10-25
+
+Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
+próximo PR de código.
+
+### Added
+- `CLAUDE.md`, sección 9: el piso mide los `.md`, y los comentarios se revisan a mano con las
+  reglas de `docs/DESIGN.md`, "Los comentarios".
+- `docs/DECISIONS.md`: "El piso mide los `.md`, y los comentarios se revisan a mano".
+
 ## v0.6 — 2026-10-25
 
 Solo documentación. No cambia código ni `Cargo.toml`; el motor sigue mostrando 0.2.0 hasta el
